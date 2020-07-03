@@ -1,12 +1,36 @@
 #include "Constants.h"
+#include "GL/GLDebug.h"
+#include "GL/GLUtilities.h"
+#include "Maths.h"
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Window.hpp>
 #include <glad/glad.h>
 #include <iostream>
-#include "GL/GLDebug.h"
+#include <glm/gtc/type_ptr.hpp>
 
-#include "GL/GLUtilities.h"
-#include "Mesh.h"
+struct Camera {
+    glm::vec3 position;
+    glm::vec3 rotation;
+    glm::mat4 projectionMatrix;
+
+    Camera(float aspectRatio, float fov)
+    {
+        projectionMatrix = createProjectionMatrix(aspectRatio, fov);
+        position = {0, 0, -3.0f};
+        rotation = {0, 0, 0};
+    }
+
+    glm::mat4 getProjectionView() const
+    {
+        glm::mat4 view{1.0f};
+        glm::mat4 projectionView{1.0f};
+
+        view = createViewMartix(position, rotation);
+        projectionView = projectionMatrix * view;
+
+        return projectionView;
+    }
+};
 
 int main()
 {
@@ -19,6 +43,7 @@ int main()
     contextSettings.minorVersion = 3;
     contextSettings.attributeFlags = sf::ContextSettings::Core;
     sf::Window window({1280, 720}, "Pong 3D", sf::Style::Close, contextSettings);
+    window.setFramerateLimit(60);
 
     if (!gladLoadGL()) {
         std::cerr << "Failed to load OpenGL, exiting.\n";
@@ -29,9 +54,10 @@ int main()
     glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
     glCheck(glEnable(GL_DEPTH_TEST));
 
-    // clang-format off
     //Make a mesh
     Mesh mesh;
+
+    // clang-format off
     mesh.positions = {
         0.0f, 0.0f, 0.0f,
         0.5f, 0.0f, 0.0f,
@@ -46,6 +72,12 @@ int main()
     // clang-format on
 
     auto quad = bufferMesh(mesh);
+    GLuint shader = loadShaderProgram("minimal", "minimal");
+    GLuint modelMatrixLocation = glCheck(glGetUniformLocation(shader, "modelMatrix"));
+    GLuint pvMatrixLocation = glCheck(glGetUniformLocation(shader, "projectionViewMatrix"));
+    glUseProgram(shader);
+
+    Camera camera(1280.0f / 720.0f, 90);
 
     // Main loop
     while (window.isOpen()) {
@@ -57,6 +89,11 @@ int main()
         // Input
 
         // Update
+        auto projectionView = camera.getProjectionView();
+        auto modelmatrix = createModelMatrix({0.0f, 0.5f, -3.0f}, {0.0f, 0.0f, 0.0f});
+
+        glCheck(glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelmatrix)));
+        glCheck(glUniformMatrix4fv(pvMatrixLocation, 1, GL_FALSE, glm::value_ptr(projectionView)));
 
         // Render
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
@@ -66,6 +103,5 @@ int main()
 
         window.display();
     }
-
     return 0;
 }

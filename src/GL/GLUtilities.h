@@ -2,8 +2,12 @@
 
 #include <glad/glad.h>
 #include <vector>
+#include <string>
 
-struct Mesh;
+struct Mesh {
+    std::vector<GLfloat> positions;
+    std::vector<GLuint> index;
+};
 
 struct BufferedMesh {
     GLuint vao;
@@ -11,3 +15,5 @@ struct BufferedMesh {
 };
 
 BufferedMesh bufferMesh(const Mesh& mesh);
+
+GLuint loadShaderProgram(const std::string& vShaderName, const std::string& fShaderName);
