@@ -2,7 +2,7 @@
 
 glm::mat4 createModelMatrix(const glm::vec3& pos, const glm::vec3& rot)
 {
-    glm::mat4 matrix;
+    glm::mat4 matrix{1.0f};
 
     matrix = glm::rotate(matrix, glm::radians(rot.x), {1, 0, 0});
     matrix = glm::rotate(matrix, glm::radians(rot.y), {0, 1, 0});
@@ -15,7 +15,7 @@ glm::mat4 createModelMatrix(const glm::vec3& pos, const glm::vec3& rot)
 
 glm::mat4 createViewMartix(const glm::vec3& pos, const glm::vec3& rot)
 {
-    glm::mat4 matrix(1.f);
+    glm::mat4 matrix{1.0f};
 
     matrix = glm::rotate(matrix, glm::radians(rot.x), {1, 0, 0});
     matrix = glm::rotate(matrix, glm::radians(rot.y), {0, 1, 0});

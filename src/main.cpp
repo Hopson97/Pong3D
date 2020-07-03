@@ -16,7 +16,7 @@ struct Camera {
     Camera(float aspectRatio, float fov)
     {
         projectionMatrix = createProjectionMatrix(aspectRatio, fov);
-        position = {0, 0, -3.0f};
+        position = {0, 0, -1.0f};
         rotation = {0, 0, 0};
     }
 
