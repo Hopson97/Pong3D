@@ -14,21 +14,15 @@ struct Camera {
     glm::mat4 projectionMatrix;
 
     Camera(float aspectRatio, float fov)
+    :   projectionMatrix(createProjectionMatrix(aspectRatio, fov))
     {
-        projectionMatrix = createProjectionMatrix(aspectRatio, fov);
         position = {0, 0, -1.0f};
         rotation = {0, 0, 0};
     }
 
     glm::mat4 getProjectionView() const
     {
-        glm::mat4 view{1.0f};
-        glm::mat4 projectionView{1.0f};
-
-        view = createViewMartix(position, rotation);
-        projectionView = projectionMatrix * view;
-
-        return projectionView;
+        return projectionMatrix * createViewMartix(position, rotation);
     }
 };
 
