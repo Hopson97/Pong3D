@@ -3,11 +3,9 @@
 #include <glad/glad.h>
 #include <vector>
 #include <string>
+#include <glm/gtc/matrix_transform.hpp>
 
-struct Mesh {
-    std::vector<GLfloat> positions;
-    std::vector<GLuint> index;
-};
+struct Mesh;
 
 struct BufferedMesh {
     GLuint vao;
@@ -17,3 +15,4 @@ struct BufferedMesh {
 BufferedMesh bufferMesh(const Mesh& mesh);
 
 GLuint loadShaderProgram(const std::string& vShaderName, const std::string& fShaderName);
+void uniformMatrix4(GLuint location, glm::mat4& matrix);

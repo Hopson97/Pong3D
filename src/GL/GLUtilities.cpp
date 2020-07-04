@@ -1,12 +1,14 @@
 #include "GLUtilities.h"
 
+#include "../Mesh.h"
 #include "GLDebug.h"
 #include <fstream>
-#include <sstream>
 #include <iostream>
+#include <glm/gtc/type_ptr.hpp>
+#include <sstream>
 
 namespace {
-    //For loading shaders
+    // For loading shaders
     GLuint compileShader(const std::string_view source, GLenum shaderType)
     {
         auto shaderID = glCheck(glCreateShader(shaderType));
@@ -102,4 +104,9 @@ GLuint loadShaderProgram(const std::string& vShaderName, const std::string& fSha
     auto fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
 
     return linkProgram(vertexShader, fragmentShader);
+}
+
+void uniformMatrix4(GLuint location, glm::mat4& matrix)
+{
+    glCheck(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix)));
 }
