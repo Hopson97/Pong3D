@@ -3,8 +3,8 @@
 #include "../Mesh.h"
 #include "GLDebug.h"
 #include <fstream>
-#include <iostream>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 #include <sstream>
 
 namespace {

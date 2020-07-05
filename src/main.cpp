@@ -1,6 +1,7 @@
 #include "GL/GLDebug.h"
 #include "GL/GLUtilities.h"
 #include "Maths.h"
+#include "Mesh.h"
 #include <SFML/System/Time.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Window.hpp>

@@ -4,9 +4,6 @@ IndentWidth: 4
 
 BreakBeforeBraces: Stroustrup
 
-
-
-
 FixNamespaceComments: true
 IndentCaseLabels: true
 NamespaceIndentation: All
@@ -19,4 +16,4 @@ ColumnLimit: 90
 
 AlwaysBreakTemplateDeclarations: true
 
-PointerAlignment: Left 
+PointerAlignment: Left

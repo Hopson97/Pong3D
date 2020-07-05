@@ -1,12 +1,10 @@
 #pragma once
 
-#include <vector>
 #include <glad/glad.h>
 #include <glm/common.hpp>
-
+#include <vector>
 
 struct Mesh {
     std::vector<GLfloat> positions;
     std::vector<GLuint> index;
 };
-

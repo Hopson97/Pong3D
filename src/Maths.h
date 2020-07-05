@@ -1,7 +1,7 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <glm/common.hpp>
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 glm::mat4 createModelMatrix(const glm::vec3& pos, const glm::vec3& rot);
