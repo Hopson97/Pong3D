@@ -48,23 +48,9 @@ int main()
     glCheck(glEnable(GL_DEPTH_TEST));
 
     // Make a mesh
-    Mesh mesh;
+    Mesh mesh = createCubeMesh({1.0f, 1.0f, 1.0f});
 
-    // clang-format off
-    mesh.positions = {
-        0.0f, 0.0f, 0.0f,
-        0.5f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
-    };
-
-    mesh.index = {
-        0, 1, 2,
-        2, 3, 0
-    };
-    // clang-format on
-
-    auto quad = bufferMesh(mesh);
+    auto cube = bufferMesh(mesh);
     GLuint shader = loadShaderProgram("minimal", "minimal");
     GLuint modelMatrixLocation = glCheck(glGetUniformLocation(shader, "modelMatrix"));
     GLuint pvMatrixLocation =
@@ -74,6 +60,7 @@ int main()
     Camera camera(1280.0f / 720.0f, 90);
 
     float dist = -3.0f;
+    float rot = 0;
     sf::Clock timer;
 
     // Main loop
@@ -85,10 +72,11 @@ int main()
         }
         // Input
         dist = -5 + std::sin(timer.getElapsedTime().asSeconds()) * 2;
+        rot += std::sin(timer.getElapsedTime().asSeconds()) * 2;
 
         // Update
         auto projectionView = camera.getProjectionView();
-        auto modelmatrix = createModelMatrix({0.0f, 0.5f, dist}, {0.0f, 0.0f, 0.0f});
+        auto modelmatrix = createModelMatrix({0.0f, 0.5f, dist}, {0.0f, rot, 0.0f});
 
         glCheck(glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE,
                                    glm::value_ptr(modelmatrix)));
@@ -98,8 +86,8 @@ int main()
         // Render
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
 
-        glCheck(glBindVertexArray(quad.vao));
-        glCheck(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+        glCheck(glBindVertexArray(cube.vao));
+        glCheck(glDrawElements(GL_TRIANGLES, cube.indicesCount, GL_UNSIGNED_INT, nullptr));
 
         window.display();
     }

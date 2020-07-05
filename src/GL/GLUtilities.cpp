@@ -83,14 +83,26 @@ BufferedMesh bufferMesh(const Mesh& mesh)
     glCheck(glEnableVertexAttribArray(0));
     bufferedMesh.vbos.push_back(positionVbo);
 
+    // Normals buffer
+    GLuint normalVbo;
+    glCheck(glGenBuffers(1, &normalVbo));
+    glCheck(glBindBuffer(GL_ARRAY_BUFFER, normalVbo));
+    glCheck(glBufferData(GL_ARRAY_BUFFER, mesh.normals.size() * sizeof(mesh.normals[0]),
+                         mesh.normals.data(), GL_STATIC_DRAW));
+    glCheck(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0));
+    glCheck(glEnableVertexAttribArray(0));
+    bufferedMesh.vbos.push_back(normalVbo);
+
     // Index buffer
     GLuint elementVbo;
     glCheck(glGenBuffers(1, &elementVbo));
     glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementVbo));
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                         mesh.index.size() * sizeof(mesh.index[0]), mesh.index.data(),
+                         mesh.indices.size() * sizeof(mesh.indices[0]),
+                         mesh.indices.data(),
                          GL_STATIC_DRAW));
     bufferedMesh.vbos.push_back(elementVbo);
+    bufferedMesh.indicesCount = mesh.indices.size();
 
     return bufferedMesh;
 }

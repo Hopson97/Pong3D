@@ -8,7 +8,8 @@
 struct Mesh;
 
 struct BufferedMesh {
-    GLuint vao;
+    GLuint vao = 0;
+    GLsizei indicesCount = 0;
     std::vector<GLuint> vbos;
 };
 
