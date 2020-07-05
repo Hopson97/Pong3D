@@ -1,9 +1,9 @@
 #pragma once
 
 #include <glad/glad.h>
-#include <vector>
-#include <string>
 #include <glm/gtc/matrix_transform.hpp>
+#include <string>
+#include <vector>
 
 struct Mesh;
 

@@ -1,12 +1,12 @@
-#include "Constants.h"
 #include "GL/GLDebug.h"
 #include "GL/GLUtilities.h"
 #include "Maths.h"
+#include "Mesh.h"
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Window.hpp>
 #include <glad/glad.h>
-#include <iostream>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
 struct Camera {
     glm::vec3 position;
@@ -14,7 +14,7 @@ struct Camera {
     glm::mat4 projectionMatrix;
 
     Camera(float aspectRatio, float fov)
-    :   projectionMatrix(createProjectionMatrix(aspectRatio, fov))
+        : projectionMatrix(createProjectionMatrix(aspectRatio, fov))
     {
         position = {0, 0, -1.0f};
         rotation = {0, 0, 0};
@@ -48,7 +48,7 @@ int main()
     glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
     glCheck(glEnable(GL_DEPTH_TEST));
 
-    //Make a mesh
+    // Make a mesh
     Mesh mesh;
 
     // clang-format off
@@ -68,7 +68,8 @@ int main()
     auto quad = bufferMesh(mesh);
     GLuint shader = loadShaderProgram("minimal", "minimal");
     GLuint modelMatrixLocation = glCheck(glGetUniformLocation(shader, "modelMatrix"));
-    GLuint pvMatrixLocation = glCheck(glGetUniformLocation(shader, "projectionViewMatrix"));
+    GLuint pvMatrixLocation =
+        glCheck(glGetUniformLocation(shader, "projectionViewMatrix"));
     glUseProgram(shader);
 
     Camera camera(1280.0f / 720.0f, 90);
@@ -86,8 +87,10 @@ int main()
         auto projectionView = camera.getProjectionView();
         auto modelmatrix = createModelMatrix({0.0f, 0.5f, -3.0f}, {0.0f, 0.0f, 0.0f});
 
-        glCheck(glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(modelmatrix)));
-        glCheck(glUniformMatrix4fv(pvMatrixLocation, 1, GL_FALSE, glm::value_ptr(projectionView)));
+        glCheck(glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE,
+                                   glm::value_ptr(modelmatrix)));
+        glCheck(glUniformMatrix4fv(pvMatrixLocation, 1, GL_FALSE,
+                                   glm::value_ptr(projectionView)));
 
         // Render
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
