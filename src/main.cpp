@@ -10,7 +10,7 @@
 #include <iostream>
 
 struct Camera {
-    glm::vec3 position{0, 0, -1.0f};
+    glm::vec3 position{1, 0, 2.0f};
     glm::vec3 rotation{0, 0, 0};
     glm::mat4 projectionMatrix;
 
@@ -59,7 +59,13 @@ int main()
 
     Camera camera(1280.0f / 720.0f, 90);
 
-    float dist = -3.0f;
+    // Lighting stuff
+    glm::vec3 lightPosition = {1.0f, 1.0f, -3.0f};
+    GLuint lightPositionLocation = glCheck(glGetUniformLocation(shader, "lightPosition"));
+    glCheck(glUniform3fv(lightPositionLocation, 1, glm::value_ptr(lightPosition)));
+
+    //temp
+    float dist = -2.0f;
     float rot = 0;
     sf::Clock timer;
 
@@ -72,11 +78,11 @@ int main()
         }
         // Input
         dist = -5 + std::sin(timer.getElapsedTime().asSeconds()) * 2;
-        rot += std::sin(timer.getElapsedTime().asSeconds()) * 2;
-
+        rot += 1.0f;
         // Update
         auto projectionView = camera.getProjectionView();
-        auto modelmatrix = createModelMatrix({0.0f, 0.5f, dist}, {0.0f, rot, 0.0f});
+        auto modelmatrix = createModelMatrix({-1.0f, -1.5f, dist}, {0, rot, 0});
+        std::cout << dist << std::endl;
 
         glCheck(glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE,
                                    glm::value_ptr(modelmatrix)));
@@ -87,7 +93,20 @@ int main()
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
 
         glCheck(glBindVertexArray(cube.vao));
-        glCheck(glDrawElements(GL_TRIANGLES, cube.indicesCount, GL_UNSIGNED_INT, nullptr));
+        glCheck(
+            glDrawElements(GL_TRIANGLES, cube.indicesCount, GL_UNSIGNED_INT, nullptr));
+        glCheck(
+            glDrawElements(GL_TRIANGLES, cube.indicesCount, GL_UNSIGNED_INT, nullptr));
+
+        
+        modelmatrix = createModelMatrix(lightPosition, {0, 0, 0});
+        glCheck(glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE,
+                                   glm::value_ptr(modelmatrix)));
+        glCheck(
+            glDrawElements(GL_TRIANGLES, cube.indicesCount, GL_UNSIGNED_INT, nullptr));
+
+
+
 
         window.display();
     }

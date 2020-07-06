@@ -22,6 +22,7 @@ Mesh createCubeMesh(const glm::vec3& dimensions)
         // Bottom
         0, 0, 0, w, 0, 0, w, 0, d, 0, 0, d
     };
+    
     cube.normals = {
         // Front of the cube
         0, 0, 1.f,    0, 0, 1.f,    0, 0, 1.f,     0, 0, 1.0f,

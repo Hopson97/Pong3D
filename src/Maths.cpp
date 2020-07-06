@@ -6,12 +6,9 @@ glm::mat4 createModelMatrix(const glm::vec3& pos, const glm::vec3& rot)
 
     matrix = glm::translate(matrix, pos);
 
-
     matrix = glm::rotate(matrix, glm::radians(rot.x), {1, 0, 0});
     matrix = glm::rotate(matrix, glm::radians(rot.y), {0, 1, 0});
     matrix = glm::rotate(matrix, glm::radians(rot.z), {0, 0, 1});
-
-
     return matrix;
 }
 

@@ -89,8 +89,8 @@ BufferedMesh bufferMesh(const Mesh& mesh)
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, normalVbo));
     glCheck(glBufferData(GL_ARRAY_BUFFER, mesh.normals.size() * sizeof(mesh.normals[0]),
                          mesh.normals.data(), GL_STATIC_DRAW));
-    glCheck(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0));
-    glCheck(glEnableVertexAttribArray(0));
+    glCheck(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0));
+    glCheck(glEnableVertexAttribArray(1));
     bufferedMesh.vbos.push_back(normalVbo);
 
     // Index buffer
