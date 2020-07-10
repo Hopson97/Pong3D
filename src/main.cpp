@@ -180,7 +180,6 @@ int main()
     GLuint pvMatrixLocation = shader.getUniformLocation("projectionViewMatrix");
     GLuint lightPositionLocation = shader.getUniformLocation("lightPosition");
 
-
     // Lighting stuff
     glm::vec3 lightPosition = ball.position;
     glCheck(glUniform3fv(lightPositionLocation, 1, glm::value_ptr(lightPosition)));
@@ -206,8 +205,7 @@ int main()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSfml_NewFrame();
         ImGui::NewFrame();
-
-        ImGui::ShowDemoWindow(&show_demo_window);
+        
 
         // Input
         float dt = deltaTimer.restart().asSeconds();
@@ -276,6 +274,18 @@ int main()
 
         // Render prepare
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
+
+        // Render GUI Stuff
+        auto flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration |
+                     ImGuiWindowFlags_AlwaysAutoResize |
+                     ImGuiWindowFlags_NoSavedSettings |
+                     ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+        ImGui::SetNextWindowPos(ImVec2(10, 10));
+        if (ImGui::Begin("", (bool*)true, flags)) {
+            ImGui::Text("Player Score: %d", playerScore);
+            ImGui::Text("Computer Score: %d", enemyScore);
+        }
+        ImGui::End();
 
         auto projectionView = camera.getProjectionView();
         loadUniform(pvMatrixLocation, projectionView);
