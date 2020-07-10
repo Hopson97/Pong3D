@@ -17,10 +17,7 @@ ScreenInGame::ScreenInGame(ScreenStack* stack)
     m_ballObj = bufferMesh(ballMesh);
     m_paddleObj = bufferMesh(paddle);
 
-    m_player.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, 0.5f};
-    m_enemy.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, ROOM_DEPTH - 1.f};
-    m_ball.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, ROOM_DEPTH / 2.0f};
-    m_ball.velocity = {5, 5, BALL_SPEED};
+    resetGame();
 
     m_shader = loadShaderProgram("minimal", "minimal");
     m_shader.use();
@@ -36,10 +33,19 @@ ScreenInGame::~ScreenInGame()
     m_shader.destroy();
     m_paddleObj.destroy();
     m_roomObj.destroy();
+
+    glUseProgram(0);
+    glBindVertexArray(0);
 }
 
 void ScreenInGame::onInput()
 {
+    if (!m_isPaused && sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+        m_isPaused = true;
+    }
+    if (m_isPaused) {
+        return;
+    }
     float SPEED = 1.5f;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         m_player.velocity.y += SPEED;
@@ -77,6 +83,9 @@ void ScreenInGame::onInput()
 
 void ScreenInGame::onUpdate(float dt)
 {
+    if (m_isPaused) {
+        return;
+    }
     m_ball.update(dt);
     m_player.update(dt);
     m_enemy.update(dt);
@@ -113,7 +122,7 @@ void ScreenInGame::onRender()
                  ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
                  ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
     ImGui::SetNextWindowPos(ImVec2(10, 10));
-    if (ImGui::Begin("", (bool*)true, flags)) {
+    if (ImGui::Begin("Screen", nullptr, flags)) {
         ImGui::Text("Player Score: %d", m_playerScore);
         ImGui::Text("Computer Score: %d", m_enemyScore);
     }
@@ -151,4 +160,39 @@ void ScreenInGame::onRender()
     modelmatrix = createModelMatrix(m_ball.position, {0, 0, 0});
     loadUniform(m_modelMatLoc, modelmatrix);
     m_ballObj.draw();
+
+    if (m_isPaused) {
+        showPauseMenu();
+    }
+}
+
+void ScreenInGame::showPauseMenu()
+{
+    if (imguiBeginCustom("P A U S E D")) {
+        if (imguiButtonCustom("Resume Game")) {
+            m_isPaused = false;
+        }
+        if (imguiButtonCustom("Reset Game")) {
+            resetGame();
+            m_isPaused = false; 
+        }
+        if (imguiButtonCustom("Exit Game")) {
+            m_pScreens->popScreen();
+        }
+    }
+    ImGui::End();
+}
+
+void ScreenInGame::resetGame()
+{
+    m_playerScore = 0;
+    m_enemyScore = 0;
+
+    m_player.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, 0.5f};
+    m_enemy.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, ROOM_DEPTH - 1.f};
+    m_ball.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, ROOM_DEPTH / 2.0f};
+
+    m_ball.velocity = {5, 5, BALL_SPEED};
+    m_player.velocity = {0.0f, 0.0f, 0.0f};
+    m_enemy.velocity = {0.0f, 0.0f, 0.0f};
 }

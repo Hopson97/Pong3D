@@ -2,9 +2,9 @@
 
 #include "Screen.h"
 
+#include "GL/GLUtilities.h"
 #include "GameObjects.h"
 #include "Maths.h"
-#include "GL/GLUtilities.h"
 
 class ScreenInGame final : public Screen {
   public:
@@ -16,6 +16,11 @@ class ScreenInGame final : public Screen {
     void onRender();
 
   private:
+    bool m_isPaused = false;
+    void showPauseMenu();
+
+    void resetGame();
+
     Camera m_camera;
     Paddle m_player;
     Paddle m_enemy;
@@ -32,5 +37,4 @@ class ScreenInGame final : public Screen {
 
     int m_playerScore = 0;
     int m_enemyScore = 0;
-
 };

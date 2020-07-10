@@ -1,13 +1,13 @@
 #include "GL/GLDebug.h"
+#include "Screen.h"
+#include "ScreenInGame.h"
+#include "ScreenMainMenu.h"
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Window.hpp>
 #include <imgui/imgui.h>
 #include <imgui_impl/imgui_impl_opengl3.h>
 #include <imgui_impl/imgui_impl_sfml.h>
 #include <iostream>
-
-#include "Screen.h"
-#include "ScreenInGame.h"
 
 int main()
 {
@@ -38,13 +38,20 @@ int main()
     ImGui::CreateContext();
     ImGui_ImplSfml_Init(&window);
     ImGui_ImplOpenGL3_Init();
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowRounding = 2;
+    style.FrameRounding = 0;
+    style.PopupRounding = 0;
+    style.ScrollbarRounding = 0;
+    style.TabRounding = 6;
 
     ScreenStack screens;
-    screens.pushScreen(std::make_unique<ScreenInGame>(&screens));
+    screens.pushScreen(std::make_unique<ScreenMainMenu>(&screens));
+    screens.update();
 
     // Main loop
     sf::Clock deltaTimer;
-    while (window.isOpen()) {
+    while (window.isOpen() && screens.hasScreen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
             ImGui_ImplSfml_ProcessEvent(event);
@@ -67,6 +74,7 @@ int main()
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         window.display();
+        screens.update();
     }
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSfml_Shutdown();
