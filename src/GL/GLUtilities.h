@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
 #include <vector>
+#include <SFML/Graphics/Image.hpp>
 
 struct Mesh;
 
@@ -14,11 +15,6 @@ struct BufferedMesh {
 
     void draw();
 
-    void destroy();
-};
-
-struct Texture {
-    GLuint id;
     void destroy();
 };
 

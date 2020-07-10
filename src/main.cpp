@@ -9,6 +9,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
+#include <imgui/imgui.h>
+#include <imgui_impl/imgui_impl_opengl3.h>
+#include <imgui_impl/imgui_impl_sfml.h>
+
 constexpr float ROOM_SIZE = 30.0f;
 constexpr float ROOM_DEPTH = 40.0f;
 constexpr float BALL_SPEED = 12.0f;
@@ -137,6 +141,12 @@ int main()
     glCheck(glCullFace(GL_BACK));
     glCheck(glEnable(GL_CULL_FACE));
 
+    // ImGUI
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui_ImplSfml_Init(&window);
+    ImGui_ImplOpenGL3_Init();
+
     // The Room
     Mesh roomMesh = createWireCubeMesh({ROOM_SIZE, ROOM_SIZE, ROOM_DEPTH});
     auto roomObject = bufferMesh(roomMesh);
@@ -178,6 +188,8 @@ int main()
     int playerScore = 0;
     int enemyScore = 0;
 
+    bool show_demo_window = true;
+
     sf::Clock timer;
     sf::Clock deltaTimer;
     auto lastMousePos = sf::Mouse::getPosition(window);
@@ -185,10 +197,17 @@ int main()
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
+            ImGui_ImplSfml_ProcessEvent(event);
             if (event.type == sf::Event::Closed ||
                 sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
                 window.close();
         }
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSfml_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::ShowDemoWindow(&show_demo_window);
 
         // Input
         float dt = deltaTimer.restart().asSeconds();
@@ -257,6 +276,7 @@ int main()
 
         // Render prepare
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
+
         auto projectionView = camera.getProjectionView();
         loadUniform(pvMatrixLocation, projectionView);
 
@@ -288,9 +308,16 @@ int main()
         loadUniform(modelMatrixLocation, modelmatrix);
         roomObject.draw();
 
+        // GUI
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         // Display
         window.display();
     }
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSfml_Shutdown();
+    ImGui::DestroyContext();
 
     ballObject.destroy();
     paddleObject.destroy();

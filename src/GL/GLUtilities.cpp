@@ -149,14 +149,6 @@ void BufferedMesh::destroy()
     }
 }
 
-void Texture::destroy()
-{
-    if (id) {
-        glDeleteTextures(1, &id);
-        id = 0;
-    }
-}
-
 GLuint Shader::getUniformLocation(const char* name)
 {
     return glCheck(glGetUniformLocation(program, name));
