@@ -42,3 +42,5 @@ Release/
 experimental/
 
 *.zip
+
+imgui.ini
