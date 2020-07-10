@@ -12,6 +12,27 @@
 const float ROOM_SIZE = 30.0f;
 const float ROOM_DEPTH = 40.0f;
 
+template <typename T, typename F>
+void roomCollide(T& object, F onCollide)
+{
+    if (object.position.x + T::WIDTH > ROOM_SIZE) {
+        object.position.x = ROOM_SIZE - T::WIDTH;
+        onCollide(object.velocity.x);
+    }
+    else if (object.position.x < 0) {
+        object.position.x = 0;
+        onCollide(object.velocity.x);
+    }
+    if (object.position.y + T::HEIGHT > ROOM_SIZE) {
+        object.position.y = ROOM_SIZE - T::HEIGHT;
+        onCollide(object.velocity.y);
+    }
+    else if (object.position.y < 0) {
+        object.position.y = 0;
+        onCollide(object.velocity.y);
+    }
+}
+
 struct Camera {
     glm::vec3 position{0.0f};
     glm::vec3 rotation{0, 180, 0};
@@ -33,36 +54,28 @@ struct Paddle {
     constexpr static float HEIGHT = 3.0f;
     glm::vec3 position{0.0f};
     glm::vec3 velocity{0.0f};
+
+    void update(float dt)
+    {
+        position += velocity * dt;
+        velocity *= 0.96;
+        roomCollide(*this, [](float& v) { v = 0; });
+    }
 };
 
 struct Ball {
     constexpr static float WIDTH = 0.5;
     constexpr static float HEIGHT = 0.5;
-    ;
+
     glm::vec3 position;
     glm::vec3 velocity{0.0f};
-};
 
-template <typename T, typename F>
-void roomCollide(T& object, F onCollide)
-{
-    if (object.position.x + T::WIDTH > ROOM_SIZE) {
-        object.position.x = ROOM_SIZE - T::WIDTH;
-        onCollide(object.velocity.x);
+    void update(float dt)
+    {
+        position += velocity * dt;
+        roomCollide(*this, [](float& v) { v *= -1; });
     }
-    else if (object.position.x < 0) {
-        object.position.x = 0;
-        onCollide(object.velocity.x);
-    }
-    if (object.position.y + T::HEIGHT > ROOM_SIZE) {
-        object.position.y = ROOM_SIZE - T::HEIGHT;
-        onCollide(object.velocity.y);
-    }
-    else if (object.position.y < 0) {
-        object.position.y = 0;
-        onCollide(object.velocity.y);
-    }
-}
+};
 
 int main()
 {
@@ -105,7 +118,7 @@ int main()
     auto paddleObject = bufferMesh(paddle);
 
     Paddle player;
-    player.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, 0.1f};
+    player.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, 0.3f};
 
     Paddle enemy;
     enemy.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, ROOM_DEPTH - 1.f};
@@ -170,16 +183,10 @@ int main()
             }
         }
 
-        player.position += player.velocity * dt;
-        player.velocity *= 0.96;
-        enemy.position += enemy.velocity * dt;
-        enemy.velocity *= 0.96;
-        ball.position += ball.velocity * dt;
-
         // Update
-        roomCollide(player, [](float& v) { v = 0; });
-        roomCollide(enemy, [](float& v) { v = 0; });
-        roomCollide(ball, [](float& v) { v *= -1; });
+        player.update(dt);
+        enemy.update(dt);
+        ball.update(dt);
 
         // Test for player or opposing player scoring
         if (ball.position.z < enemy.position.z) {
