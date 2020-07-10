@@ -17,5 +17,5 @@ void ScreenMainMenu::onUpdate([[maybe_unused]]float dt)
 
 void ScreenMainMenu::onRender()
 {
-
+    
 }

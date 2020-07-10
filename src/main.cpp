@@ -1,17 +1,10 @@
 #include "GL/GLDebug.h"
-#include "GL/GLUtilities.h"
-#include "Maths.h"
-#include "Mesh.h"
-#include <SFML/System/Time.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Window.hpp>
-#include <glad/glad.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-
 #include <imgui/imgui.h>
 #include <imgui_impl/imgui_impl_opengl3.h>
 #include <imgui_impl/imgui_impl_sfml.h>
+#include <iostream>
 
 #include "Screen.h"
 #include "ScreenInGame.h"
@@ -48,7 +41,7 @@ int main()
 
     ScreenStack screens;
     screens.pushScreen(std::make_unique<ScreenInGame>(&screens));
-    
+
     // Main loop
     sf::Clock deltaTimer;
     while (window.isOpen()) {
@@ -58,7 +51,7 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-        
+
         Screen& screen = screens.peekScreen();
         screen.onInput();
         screen.onUpdate(deltaTimer.restart().asSeconds());
