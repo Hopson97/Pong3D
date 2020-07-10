@@ -9,8 +9,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
-const float ROOM_SIZE = 30.0f;
-const float ROOM_DEPTH = 40.0f;
+constexpr float ROOM_SIZE = 30.0f;
+constexpr float ROOM_DEPTH = 40.0f;
+constexpr float BALL_SPEED = 12.0f;
 
 template <typename T, typename F>
 void roomCollide(T& object, F onCollide)
@@ -49,9 +50,30 @@ struct Camera {
     }
 };
 
+struct AABB {
+    glm::vec3 min{0.0f};
+    glm::vec3 max{0.0f};
+
+    template <typename T>
+    void update(const T& object)
+    {
+        min = object.position;
+        max = object.position + glm::vec3{T::WIDTH, T::HEIGHT, T::DEPTH};
+    }
+
+    bool isColliding(const AABB& other) const
+    {
+        return (min.x <= other.max.x && max.x >= other.min.x) &&
+               (min.y <= other.max.y && max.y >= other.min.y) &&
+               (min.z <= other.max.z && max.z >= other.min.z);
+    }
+};
+
 struct Paddle {
     constexpr static float WIDTH = 5.0f;
     constexpr static float HEIGHT = 3.0f;
+    constexpr static float DEPTH = 0.5f;
+    AABB aabb;
     glm::vec3 position{0.0f};
     glm::vec3 velocity{0.0f};
 
@@ -60,20 +82,34 @@ struct Paddle {
         position += velocity * dt;
         velocity *= 0.96;
         roomCollide(*this, [](float& v) { v = 0; });
+        aabb.update(*this);
     }
 };
 
 struct Ball {
-    constexpr static float WIDTH = 0.5;
-    constexpr static float HEIGHT = 0.5;
-
-    glm::vec3 position;
+    constexpr static float WIDTH = 0.5f;
+    constexpr static float DEPTH = 0.5f;
+    constexpr static float HEIGHT = 0.5f;
+    AABB aabb;
+    glm::vec3 position{1.0f};
     glm::vec3 velocity{0.0f};
 
     void update(float dt)
     {
         position += velocity * dt;
         roomCollide(*this, [](float& v) { v *= -1; });
+        aabb.update(*this);
+    }
+
+    void bounceOffPaddle(const Paddle& paddle)
+    {
+        glm::vec2 paddleCenter = {paddle.position.x + Paddle::WIDTH / 2,
+                                  paddle.position.y + Paddle::HEIGHT / 2};
+        glm::vec2 ballCenter = {position.x + Ball::WIDTH / 2,
+                                position.y + Ball::HEIGHT / 2};
+        auto offset = paddleCenter - ballCenter;
+        velocity.x = -offset.x * 5;
+        velocity.y = -offset.y * 5;
     }
 };
 
@@ -111,14 +147,14 @@ int main()
 
     Ball ball;
     ball.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, ROOM_DEPTH / 2.0f};
-    ball.velocity = {5, 5, 15};
+    ball.velocity = {5, 5, BALL_SPEED};
 
     // Paddles
     Mesh paddle = createWireCubeMesh({Paddle::WIDTH, Paddle::HEIGHT, 0.5f});
     auto paddleObject = bufferMesh(paddle);
 
     Paddle player;
-    player.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, 0.3f};
+    player.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, 0.5f};
 
     Paddle enemy;
     enemy.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, ROOM_DEPTH - 1.f};
@@ -128,16 +164,19 @@ int main()
     camera.position = {ROOM_SIZE / 2.0f, ROOM_SIZE / 2.0f, player.position.z - 3};
 
     // Set up the shaders
-    GLuint shader = loadShaderProgram("minimal", "minimal");
-    GLuint modelMatrixLocation = glCheck(glGetUniformLocation(shader, "modelMatrix"));
-    GLuint pvMatrixLocation =
-        glCheck(glGetUniformLocation(shader, "projectionViewMatrix"));
-    glUseProgram(shader);
+    Shader shader = loadShaderProgram("minimal", "minimal");
+    shader.use();
+    GLuint modelMatrixLocation = shader.getUniformLocation("modelMatrix");
+    GLuint pvMatrixLocation = shader.getUniformLocation("projectionViewMatrix");
+    GLuint lightPositionLocation = shader.getUniformLocation("lightPosition");
+
 
     // Lighting stuff
     glm::vec3 lightPosition = ball.position;
-    GLuint lightPositionLocation = glCheck(glGetUniformLocation(shader, "lightPosition"));
     glCheck(glUniform3fv(lightPositionLocation, 1, glm::value_ptr(lightPosition)));
+
+    int playerScore = 0;
+    int enemyScore = 0;
 
     sf::Clock timer;
     sf::Clock deltaTimer;
@@ -169,80 +208,93 @@ int main()
 
         // "AI" Input
         if (ball.velocity.z > 0) {
-            if (ball.position.x > enemy.position.x) {
+            if (ball.position.x + Ball::WIDTH / 2 >
+                enemy.position.x + Paddle::WIDTH / 2) {
                 enemy.velocity.x += SPEED / 4.0f;
             }
-            else if (ball.position.x < enemy.position.x) {
+            else if (ball.position.x + Ball::WIDTH / 2 <
+                     enemy.position.x + Paddle::WIDTH / 2) {
                 enemy.velocity.x += -SPEED / 4.0f;
             }
-            if (ball.position.y > enemy.position.y) {
+            if (ball.position.y - Ball::HEIGHT / 2 >
+                enemy.position.y + Paddle::HEIGHT / 2) {
                 enemy.velocity.y += SPEED / 4.0f;
             }
-            else if (ball.position.y < enemy.position.y) {
+            else if (ball.position.y + Ball::HEIGHT / 2 <
+                     enemy.position.y + Paddle::HEIGHT / 2) {
                 enemy.velocity.y += -SPEED / 4.0f;
             }
         }
 
         // Update
+        ball.update(dt);
         player.update(dt);
         enemy.update(dt);
-        ball.update(dt);
 
         // Test for player or opposing player scoring
-        if (ball.position.z < enemy.position.z) {
-            ball.velocity.z *= -1;
+        if (ball.aabb.isColliding(player.aabb)) {
+            ball.velocity.z = BALL_SPEED;
+            ball.position.z = player.aabb.max.z + 0.1;
+            ball.bounceOffPaddle(player);
+        }
+        else if (ball.aabb.isColliding(enemy.aabb)) {
+            ball.velocity.z = -BALL_SPEED;
+            ball.position.z = enemy.aabb.min.z - Ball::DEPTH;
+            ball.bounceOffPaddle(enemy);
         }
 
-        if (ball.position.z > player.position.z) {
-            ball.velocity.z *= -1;
+        if (ball.position.z > ROOM_DEPTH) {
+            playerScore++;
+            ball.velocity.z = -BALL_SPEED;
+        }
+        else if (ball.position.z + Ball::DEPTH < 0) {
+            enemyScore++;
+            ball.velocity.z = BALL_SPEED;
         }
 
         camera.position.x = player.position.x + Paddle::WIDTH / 2;
         camera.position.y = player.position.y + Paddle::HEIGHT / 2;
 
-        // Render
+        // Render prepare
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
         auto projectionView = camera.getProjectionView();
-        glCheck(glUniformMatrix4fv(pvMatrixLocation, 1, GL_FALSE,
-                                   glm::value_ptr(projectionView)));
+        loadUniform(pvMatrixLocation, projectionView);
 
         lightPosition = camera.position;
-        GLuint lightPositionLocation =
-            glCheck(glGetUniformLocation(shader, "lightPosition"));
-        glCheck(glUniform3fv(lightPositionLocation, 1, glm::value_ptr(lightPosition)));
+        loadUniform(lightPositionLocation, lightPosition);
 
         // Render the ball
         glCheck(glBindVertexArray(ballObject.vao));
+
         auto modelmatrix = createModelMatrix(ball.position, {0, 0, 0});
-
-        glCheck(glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE,
-                                   glm::value_ptr(modelmatrix)));
-
-        glCheck(glDrawElements(GL_TRIANGLES, ballObject.indicesCount, GL_UNSIGNED_INT,
-                               nullptr));
+        loadUniform(modelMatrixLocation, modelmatrix);
+        ballObject.draw();
 
         // Render the player
         glCheck(glBindVertexArray(paddleObject.vao));
+
         modelmatrix = createModelMatrix(enemy.position, {0, 0, 0});
-        glCheck(glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE,
-                                   glm::value_ptr(modelmatrix)));
-        glCheck(glDrawElements(GL_TRIANGLES, paddleObject.indicesCount, GL_UNSIGNED_INT,
-                               nullptr));
+        loadUniform(modelMatrixLocation, modelmatrix);
+        paddleObject.draw();
 
         modelmatrix = createModelMatrix(player.position, {0, 0, 0});
-        glCheck(glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE,
-                                   glm::value_ptr(modelmatrix)));
-        glCheck(glDrawElements(GL_TRIANGLES, paddleObject.indicesCount, GL_UNSIGNED_INT,
-                               nullptr));
+        loadUniform(modelMatrixLocation, modelmatrix);
+        paddleObject.draw();
 
         // Render the room
         glCheck(glBindVertexArray(roomObject.vao));
+
         modelmatrix = createModelMatrix({0, 0, 0}, {0, 0, 0});
-        glCheck(glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE,
-                                   glm::value_ptr(modelmatrix)));
-        glCheck(glDrawElements(GL_TRIANGLES, roomObject.indicesCount, GL_UNSIGNED_INT,
-                               nullptr));
+        loadUniform(modelMatrixLocation, modelmatrix);
+        roomObject.draw();
+
+        // Display
         window.display();
     }
+
+    ballObject.destroy();
+    paddleObject.destroy();
+    shader.destroy();
+
     return 0;
 }

@@ -107,18 +107,67 @@ BufferedMesh bufferMesh(const Mesh& mesh)
     return bufferedMesh;
 }
 
-GLuint loadShaderProgram(const std::string& vShaderName, const std::string& fShaderName)
+Shader loadShaderProgram(const std::string& vShaderName, const std::string& fShaderName)
 {
+    Shader shader;
     std::string vertexSource = loadFile("data/" + vShaderName + "_vertex.glsl");
     std::string fragmentSource = loadFile("data/" + fShaderName + "_fragment.glsl");
 
     auto vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
     auto fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
-
-    return linkProgram(vertexShader, fragmentShader);
+    shader.program = linkProgram(vertexShader, fragmentShader);
+    return shader;
 }
 
 void uniformMatrix4(GLuint location, glm::mat4& matrix)
 {
     glCheck(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix)));
+}
+
+void loadUniform(GLuint location, const glm::mat4& matrix)
+{
+    glCheck(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix)));
+}
+
+void loadUniform(GLuint location, const glm::vec3& vector)
+{
+    glCheck(glUniform3fv(location, 1, glm::value_ptr(vector)));
+}
+
+void BufferedMesh::draw()
+{
+    glCheck(glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, nullptr));
+}
+
+void BufferedMesh::destroy()
+{
+    if (vao) {
+        glDeleteVertexArrays(1, &vao);
+        glDeleteBuffers(vbos.size(), vbos.data());
+        vao = 0;
+        vbos.clear();
+    }
+}
+
+void Texture::destroy()
+{
+    if (id) {
+        glDeleteTextures(1, &id);
+        id = 0;
+    }
+}
+
+GLuint Shader::getUniformLocation(const char* name)
+{
+    return glCheck(glGetUniformLocation(program, name));
+}
+
+void Shader::use()
+{
+    glCheck(glUseProgram(program));
+}
+
+void Shader::destroy()
+{
+    glCheck(glDeleteProgram(program));
 }

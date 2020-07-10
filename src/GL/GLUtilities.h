@@ -11,9 +11,28 @@ struct BufferedMesh {
     GLuint vao = 0;
     GLsizei indicesCount = 0;
     std::vector<GLuint> vbos;
+
+    void draw();
+
+    void destroy();
+};
+
+struct Texture {
+    GLuint id;
+    void destroy();
+};
+
+struct Shader {
+    GLuint program;
+    GLuint getUniformLocation(const char* name);
+    void use();
+    void destroy();
 };
 
 BufferedMesh bufferMesh(const Mesh& mesh);
 
-GLuint loadShaderProgram(const std::string& vShaderName, const std::string& fShaderName);
+Shader loadShaderProgram(const std::string& vShaderName, const std::string& fShaderName);
 void uniformMatrix4(GLuint location, glm::mat4& matrix);
+
+void loadUniform(GLuint location, const glm::mat4& matrix);
+void loadUniform(GLuint location, const glm::vec3& vector);
