@@ -11,6 +11,8 @@ struct Mesh {
     std::vector<GLfloat> positions;
     std::vector<GLfloat> normals;
     std::vector<GLuint> indices;
+    int currentIndex = 0;
 };
 
 Mesh createCubeMesh(const glm::vec3& dimensions);
+Mesh createWireCubeMesh(const glm::vec3& dimensions);

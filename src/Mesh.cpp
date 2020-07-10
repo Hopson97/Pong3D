@@ -1,55 +1,96 @@
 #include "Mesh.h"
 
+namespace {
+    void addCubeToMesh(Mesh& mesh, const glm::vec3& dimensions,
+                       const glm::vec3& offset = {0, 0, 0})
+    {
+        float w = dimensions.x + offset.x;
+        float h = dimensions.y + offset.y;
+        float d = dimensions.z + offset.z;
+
+        float ox = offset.x;
+        float oy = offset.y;
+        float oz = offset.z;
+
+        // clang-format off
+        mesh.positions.insert(mesh.positions.end(), {
+            // Front of the cube
+            w, h, d,    ox, h, d,   ox, oy, d,  w, oy, d,
+            // Left
+            ox, h, d,   ox, h, oz,  ox, oy, oz, ox, oy, d,
+            // Back
+            ox, h, oz,  w, h, oz,   w, oy, oz,  ox, oy, oz,
+            // Right
+            w, h, oz,   w, h, d,    w, oy, d,   w, oy, oz,
+            // Top
+            w, h, oz,   ox, h, oz,  ox, h, d,   w, h, d,
+            // Bottom
+            ox, oy, oz, w, oy, oz,  w, oy, d,   ox, oy, d
+        });
+    
+        mesh.normals.insert(mesh.normals.end(), {
+            // Front of the cube
+            0, 0, 1.f,    0, 0, 1.f,    0, 0, 1.f,     0, 0, 1.0f,
+            // Left
+            -1.f, 0, 0,  -1.f, 0, 0,   -1.f, 0, 0,    -1.f, 0, 0, 
+            // Back
+            0, 0, -1.f,   0, 0, -1.f,   0, 0, -1.f,    0, 0, -1.0f,
+            // Right
+            1.f, 0, 0,    1.f, 0, 0,    1.f, 0, 0,     1.f, 0, 0, 
+            // Top
+            0, 1.f, 0,    0, 1.f, 0,    0, 1.f, 0,     0, 1.f, 0,
+            // Bottom
+            0, -1.f, 0,   0, -1.f, 0,   0, -1.f, 0,    0, -1.f, 0,
+        });
+        // clang-format on
+
+        // For each cube face, add indice
+        for (int i = 0; i < 6; i++) {
+            mesh.indices.push_back(mesh.currentIndex);
+            mesh.indices.push_back(mesh.currentIndex + 1);
+            mesh.indices.push_back(mesh.currentIndex + 2);
+            mesh.indices.push_back(mesh.currentIndex + 2);
+            mesh.indices.push_back(mesh.currentIndex + 3);
+            mesh.indices.push_back(mesh.currentIndex);
+            mesh.currentIndex += 4;
+        }
+    }
+} // namespace
+
 Mesh createCubeMesh(const glm::vec3& dimensions)
 {
     Mesh cube;
+    addCubeToMesh(cube, dimensions);
+    return cube;
+}
+
+Mesh createWireCubeMesh(const glm::vec3& dimensions)
+{
+    Mesh cube;
+    float wireSize = 0.1f;
     float w = dimensions.x;
     float h = dimensions.y;
     float d = dimensions.z;
+    // Front
+    addCubeToMesh(cube, {w, wireSize, wireSize});
+    addCubeToMesh(cube, {w, wireSize, wireSize}, {0, h, 0});
+    addCubeToMesh(cube, {wireSize, h, wireSize});
+    addCubeToMesh(cube, {wireSize, h, wireSize}, {w, 0, 0});
 
-    // clang-format off
-    cube.positions = {
-        // Front of the cube
-        w, h, d, 0, h, d, 0, 0, d, w, 0, d,
-        // Left
-        0, h, d, 0, h, 0, 0, 0, 0, 0, 0, d,
-        // Back
-        0, h, 0, w, h, 0, w, 0, 0, 0, 0, 0,
-        // Right
-        w, h, 0, w, h, d, w, 0, d, w, 0, 0,
-        // Top
-        w, h, 0, 0, h, 0, 0, h, d, w, h, d,
-        // Bottom
-        0, 0, 0, w, 0, 0, w, 0, d, 0, 0, d
-    };
+    // Back
+    addCubeToMesh(cube, {w, wireSize, wireSize}, {0, 0, d});
+    addCubeToMesh(cube, {w, wireSize, wireSize}, {0, h, d});
+    addCubeToMesh(cube, {wireSize, h, wireSize}, {0, 0, d});
+    addCubeToMesh(cube, {wireSize, h, wireSize}, {w, 0, d});
+
+    // Right
+    addCubeToMesh(cube, {wireSize, wireSize, d}, {0, h, 0});
+    addCubeToMesh(cube, {wireSize, wireSize, d});
+
+    // Left
+    addCubeToMesh(cube, {wireSize, wireSize, d}, {w, h, 0});
+    addCubeToMesh(cube, {wireSize, wireSize, d}, {w, 0, 0});
+
     
-    cube.normals = {
-        // Front of the cube
-        0, 0, 1.f,    0, 0, 1.f,    0, 0, 1.f,     0, 0, 1.0f,
-        // Left
-        -1.f, 0, 0,  -1.f, 0, 0,   -1.f, 0, 0,    -1.f, 0, 0, 
-        // Back
-        0, 0, -1.f,   0, 0, -1.f,   0, 0, -1.f,    0, 0, -1.0f,
-        // Right
-        1.f, 0, 0,    1.f, 0, 0,    1.f, 0, 0,     1.f, 0, 0, 
-        // Top
-        0, 1.f, 0,    0, 1.f, 0,    0, 1.f, 0,     0, 1.f, 0,
-        // Bottom
-        0, -1.f, 0,   0, -1.f, 0,   0, -1.f, 0,    0, -1.f, 0,
-    };
-    // clang-format on
-
-    //For each cube face, add indice
-    int index = 0;
-    for (int i = 0; i < 6; i++) {
-        cube.indices.push_back(index);
-        cube.indices.push_back(index + 1);
-        cube.indices.push_back(index + 2);
-        cube.indices.push_back(index + 2);
-        cube.indices.push_back(index + 3);
-        cube.indices.push_back(index);
-        index += 4;
-    }
-
     return cube;
 }
