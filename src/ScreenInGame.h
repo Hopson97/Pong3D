@@ -29,11 +29,13 @@ class ScreenInGame final : public Screen {
     BufferedMesh m_paddleObj;
     BufferedMesh m_ballObj;
     BufferedMesh m_roomObj;
+    BufferedMesh m_terrainObj;
 
     Shader m_shader;
     GLuint m_modelMatLoc = 0;
     GLuint m_pvMatLoc = 0;
     GLuint m_lightLoc = 0;
+    GLuint m_colourLoc = 0;
 
     int m_playerScore = 0;
     int m_enemyScore = 0;

@@ -3,14 +3,12 @@
 out vec4 outColour;
 
 uniform vec3 lightPosition;
+uniform vec3 colour;
 
 in vec3 passFragPosition;
 in vec3 passNormal;
 
 void main() {
-    vec3 colour = vec3(0.0, 0.65, 0.7);
-    //vec3 colour = vec3(1.0, 0.0, 1.0);
-
     vec3 normal = normalize(passNormal);
     vec3 lightDirection = normalize(lightPosition - passFragPosition);
 

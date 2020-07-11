@@ -16,3 +16,4 @@ struct Mesh {
 
 Mesh createCubeMesh(const glm::vec3& dimensions);
 Mesh createWireCubeMesh(const glm::vec3& dimensions);
+Mesh createTerrainMesh(const glm::vec2& size);

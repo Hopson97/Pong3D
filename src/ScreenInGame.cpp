@@ -12,7 +12,9 @@ ScreenInGame::ScreenInGame(ScreenStack* stack)
     Mesh roomMesh = createWireCubeMesh({ROOM_SIZE, ROOM_SIZE, ROOM_DEPTH});
     Mesh ballMesh = createWireCubeMesh({Ball::WIDTH, Ball::HEIGHT, Ball::WIDTH});
     Mesh paddle = createWireCubeMesh({Paddle::WIDTH, Paddle::HEIGHT, 0.5f});
+    Mesh terrain = createTerrainMesh({256, 256});
 
+    m_terrainObj = bufferMesh(terrain);
     m_roomObj = bufferMesh(roomMesh);
     m_ballObj = bufferMesh(ballMesh);
     m_paddleObj = bufferMesh(paddle);
@@ -25,6 +27,7 @@ ScreenInGame::ScreenInGame(ScreenStack* stack)
     m_modelMatLoc = m_shader.getUniformLocation("modelMatrix");
     m_pvMatLoc = m_shader.getUniformLocation("projectionViewMatrix");
     m_lightLoc = m_shader.getUniformLocation("lightPosition");
+    m_colourLoc = m_shader.getUniformLocation("colour");
 }
 
 ScreenInGame::~ScreenInGame()
@@ -33,9 +36,10 @@ ScreenInGame::~ScreenInGame()
     m_shader.destroy();
     m_paddleObj.destroy();
     m_roomObj.destroy();
+    m_terrainObj.destroy();
 
-    glUseProgram(0);
-    glBindVertexArray(0);
+    glCheck(glUseProgram(0));
+    glCheck(glBindVertexArray(0));
 }
 
 void ScreenInGame::onInput()
@@ -138,6 +142,7 @@ void ScreenInGame::onRender()
     loadUniform(m_lightLoc, m_camera.position);
 
     // Render room
+    loadUniform(m_colourLoc, {0.0, 0.65, 0.7});
     glCheck(glBindVertexArray(m_roomObj.vao));
 
     auto modelmatrix = createModelMatrix({0, 0, 0}, {0, 0, 0});
@@ -161,6 +166,17 @@ void ScreenInGame::onRender()
     modelmatrix = createModelMatrix(m_ball.position, {0, 0, 0});
     loadUniform(m_modelMatLoc, modelmatrix);
     m_ballObj.draw();
+
+    // Render terrain
+    glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+    loadUniform(m_colourLoc, {1.0, 0.0, 1.0});
+    glCheck(glBindVertexArray(m_terrainObj.vao));
+
+    modelmatrix = createModelMatrix({-256 / 2 * 2.5, -2, -5}, {0, 0, 0});
+    loadUniform(m_modelMatLoc, modelmatrix);
+    m_terrainObj.draw();
+    glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+
 
     if (m_isPaused) {
         showPauseMenu();

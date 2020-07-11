@@ -91,6 +91,34 @@ Mesh createWireCubeMesh(const glm::vec3& dimensions)
     addCubeToMesh(cube, {wireSize, wireSize, d}, {w, h, 0});
     addCubeToMesh(cube, {wireSize, wireSize, d}, {w, 0, 0});
 
-    
     return cube;
+}
+
+Mesh createTerrainMesh(const glm::vec2& size)
+{
+    Mesh terrian;
+    float quadSize = 5.0f;
+    for (int y = 0; y < size.y; y++) {
+        for (int x = 0; x < size.x; x++) {
+            terrian.positions.push_back(x * quadSize);
+            terrian.positions.push_back(0);
+            terrian.positions.push_back(y * quadSize);
+
+            terrian.normals.push_back(0);
+            terrian.normals.push_back(1);
+            terrian.normals.push_back(0);
+        }
+    }
+    for (int y = 0; y < size.y - 1; y++) {
+        for (int x = 0; x < size.x - 1; x++) {
+            GLuint index = x + y * size.x;
+            terrian.indices.push_back(index);
+            terrian.indices.push_back(index + size.x);
+            terrian.indices.push_back(index + size.x + 1);
+            terrian.indices.push_back(index + size.x + 1);
+            terrian.indices.push_back(index + 1);
+            terrian.indices.push_back(index);
+        }
+    }
+    return terrian;
 }

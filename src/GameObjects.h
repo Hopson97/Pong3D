@@ -34,7 +34,6 @@ struct Camera {
 
     Camera(float aspectRatio, float fov);
     glm::mat4 getProjectionView() const;
-    glm::mat4 getOrbitProjectionView() const;
 };
 
 struct AABB {
