@@ -15,7 +15,7 @@ glm::mat4 Camera::getProjectionView() const
 void Paddle::update(float dt)
 {
     position += velocity * dt;
-    velocity *= 0.96;
+    velocity *= 0.96f;
     roomCollide(*this, [](float& v) { v = 0; });
     aabb.update(*this);
 }
@@ -23,6 +23,7 @@ void Paddle::update(float dt)
 void Ball::update(float dt)
 {
     position += velocity * dt;
+    rotation += velocity * 10.0f * dt;
     roomCollide(*this, [](float& v) { v *= -1; });
     aabb.update(*this);
 }

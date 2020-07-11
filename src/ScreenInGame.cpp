@@ -163,7 +163,7 @@ void ScreenInGame::onRender()
     // Render balls
     glCheck(glBindVertexArray(m_ballObj.vao));
 
-    modelmatrix = createModelMatrix(m_ball.position, {0, 0, 0});
+    modelmatrix = createModelMatrix(m_ball.position, m_ball.rotation);
     loadUniform(m_modelMatLoc, modelmatrix);
     m_ballObj.draw();
 

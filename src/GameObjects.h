@@ -71,7 +71,8 @@ struct Ball {
     constexpr static float DEPTH = 0.5f;
     constexpr static float HEIGHT = 0.5f;
     AABB aabb;
-    glm::vec3 position{1.0f};
+    glm::vec3 position{0.0f};
+    glm::vec3 rotation{0.0f};
     glm::vec3 velocity{0.0f};
 
     void update(float dt);
