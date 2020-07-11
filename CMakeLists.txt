@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 #Set up project
-project(gltexttest VERSION 1.0)
+project(Pong3D VERSION 1.0)
 
 #Set executable
 set(SOURCES
@@ -10,6 +10,10 @@ set(SOURCES
     src/Mesh.cpp
     src/GL/GLDebug.cpp 
     src/GL/GLUtilities.cpp
+    src/GameObjects.cpp
+    src/Screen.cpp
+    src/ScreenMainMenu.cpp
+    src/ScreenInGame.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -36,11 +40,13 @@ add_subdirectory(deps)
 #Find libraries
 find_package(Threads)
 find_package(SFML REQUIRED audio network graphics window system)
-find_package(glm REQUIRED)
 
 #Finally
 target_link_libraries(${PROJECT_NAME} 
     glad
+    glm
+    imgui
+    imgui_impl
     Threads::Threads 
     ${SFML_LIBRARIES} 
     ${SFML_DEPENDENCIES}

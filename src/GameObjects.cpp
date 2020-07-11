@@ -1,7 +1,5 @@
 #include "GameObjects.h"
 
-
-
 Camera::Camera(float aspectRatio, float fov)
     : projectionMatrix(createProjectionMatrix(aspectRatio, fov))
 {

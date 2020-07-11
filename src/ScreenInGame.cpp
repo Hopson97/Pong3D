@@ -177,7 +177,6 @@ void ScreenInGame::onRender()
     m_terrainObj.draw();
     glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 
-
     if (m_isPaused) {
         showPauseMenu();
     }

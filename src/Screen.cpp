@@ -48,15 +48,9 @@ void ScreenStack::update()
     m_actions.clear();
 }
 
-Screen& ScreenStack::peekScreen()
-{
-    return *m_screens.top();
-}
+Screen& ScreenStack::peekScreen() { return *m_screens.top(); }
 
-bool ScreenStack::hasScreen() const
-{
-    return !m_screens.empty();
-}
+bool ScreenStack::hasScreen() const { return !m_screens.empty(); }
 
 Screen::Screen(ScreenStack* screens)
     : m_pScreens(screens)

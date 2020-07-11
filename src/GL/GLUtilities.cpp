@@ -99,8 +99,7 @@ BufferedMesh bufferMesh(const Mesh& mesh)
     glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementVbo));
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                          mesh.indices.size() * sizeof(mesh.indices[0]),
-                         mesh.indices.data(),
-                         GL_STATIC_DRAW));
+                         mesh.indices.data(), GL_STATIC_DRAW));
     bufferedMesh.vbos.push_back(elementVbo);
     bufferedMesh.indicesCount = mesh.indices.size();
 
@@ -154,12 +153,6 @@ GLuint Shader::getUniformLocation(const char* name)
     return glCheck(glGetUniformLocation(program, name));
 }
 
-void Shader::use()
-{
-    glCheck(glUseProgram(program));
-}
+void Shader::use() { glCheck(glUseProgram(program)); }
 
-void Shader::destroy()
-{
-    glCheck(glDeleteProgram(program));
-}
+void Shader::destroy() { glCheck(glDeleteProgram(program)); }

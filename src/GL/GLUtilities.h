@@ -1,10 +1,10 @@
 #pragma once
 
+#include <SFML/Graphics/Image.hpp>
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
 #include <vector>
-#include <SFML/Graphics/Image.hpp>
 
 struct Mesh;
 

@@ -38,7 +38,7 @@ class Screen {
     Screen(ScreenStack* screens);
     virtual ~Screen() = default;
     virtual void onInput() {}
-    virtual void onUpdate([[maybe_unused]]float dt) {}
+    virtual void onUpdate([[maybe_unused]] float dt) {}
     virtual void onRender() = 0;
 
   protected:
