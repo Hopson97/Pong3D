@@ -11,9 +11,9 @@ class ScreenInGame final : public Screen {
     ScreenInGame(ScreenStack* stack);
     ~ScreenInGame();
 
-    void onInput();
-    void onUpdate(float dt);
-    void onRender();
+    void onInput() override;
+    void onUpdate(float dt) override;
+    void onRender() override;
 
   private:
     bool m_isPaused = false;

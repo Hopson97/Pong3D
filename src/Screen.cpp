@@ -76,6 +76,6 @@ bool imguiBeginCustom(const char* name)
 
 bool imguiButtonCustom(const char* text)
 {
-    ImGui::SetCursorPos({ImGui::GetCursorPosX() + 100, ImGui::GetCursorPosY() + 25});
+    ImGui::SetCursorPos({ImGui::GetCursorPosX() + 100, ImGui::GetCursorPosY() + 30});
     return ImGui::Button(text, {100, 50});
 }

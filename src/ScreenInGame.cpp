@@ -1,8 +1,8 @@
 #include "ScreenInGame.h"
 
+#include "GL/GLDebug.h"
 #include "Mesh.h"
 #include <SFML/Window/Keyboard.hpp>
-#include "GL/GLDebug.h"
 #include <imgui/imgui.h>
 
 ScreenInGame::ScreenInGame(ScreenStack* stack)
@@ -113,6 +113,7 @@ void ScreenInGame::onUpdate(float dt)
 
     m_camera.position.x = m_player.position.x + Paddle::WIDTH / 2;
     m_camera.position.y = m_player.position.y + Paddle::HEIGHT / 2;
+    m_camera.position.z = m_player.position.z - 3.0f;
 }
 
 void ScreenInGame::onRender()
@@ -174,7 +175,7 @@ void ScreenInGame::showPauseMenu()
         }
         if (imguiButtonCustom("Reset Game")) {
             resetGame();
-            m_isPaused = false; 
+            m_isPaused = false;
         }
         if (imguiButtonCustom("Exit Game")) {
             m_pScreens->popScreen();

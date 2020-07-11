@@ -6,7 +6,7 @@
 
 class Screen;
 
-class ScreenStack {
+class ScreenStack final {
     struct Action {
         enum class Kind {
             Push,
@@ -16,6 +16,7 @@ class ScreenStack {
         Kind kind;
         std::unique_ptr<Screen> screen;
     };
+
   public:
     void pushScreen(std::unique_ptr<Screen> screen);
     void popScreen();
@@ -27,8 +28,7 @@ class ScreenStack {
 
     bool hasScreen() const;
 
-
-//  private:
+    //  private:
     std::stack<std::unique_ptr<Screen>> m_screens;
     std::vector<Action> m_actions;
 };
@@ -37,11 +37,11 @@ class Screen {
   public:
     Screen(ScreenStack* screens);
     virtual ~Screen() = default;
-    virtual void onInput() = 0;
-    virtual void onUpdate(float dt) = 0;
+    virtual void onInput() {}
+    virtual void onUpdate([[maybe_unused]]float dt) {}
     virtual void onRender() = 0;
 
-protected:
+  protected:
     ScreenStack* m_pScreens;
 };
 

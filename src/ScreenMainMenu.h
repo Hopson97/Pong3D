@@ -6,9 +6,7 @@ class ScreenMainMenu final : public Screen {
   public:
     ScreenMainMenu(ScreenStack* stack);
 
-    void onInput();
-    void onUpdate(float dt);
-    void onRender();
+    void onRender() override;
 
   private:
 };
