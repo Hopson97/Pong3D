@@ -133,7 +133,7 @@ void loadUniform(GLuint location, const glm::vec3& vector)
     glCheck(glUniform3fv(location, 1, glm::value_ptr(vector)));
 }
 
-void BufferedMesh::draw()
+void BufferedMesh::draw() const
 {
     glCheck(glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, nullptr));
 }

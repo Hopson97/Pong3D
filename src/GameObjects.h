@@ -6,6 +6,11 @@ constexpr float ROOM_SIZE = 30.0f;
 constexpr float ROOM_DEPTH = 40.0f;
 constexpr float BALL_SPEED = 12.0f;
 
+constexpr float TERRAIN_HEIGHT = 60.0f;
+constexpr float TERRAIN_WIDTH = 300.0f;
+constexpr float TILE_SIZE = 15.0f;
+constexpr float TERRAIN_LENGTH = TERRAIN_HEIGHT * TILE_SIZE;
+
 template <typename T, typename F>
 void roomCollide(T& object, F onCollide)
 {

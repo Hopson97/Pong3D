@@ -1,5 +1,11 @@
 #include "Mesh.h"
 
+#include "Maths.h"
+#include <glm/gtc/noise.hpp>
+#include <iostream>
+
+#include "GameObjects.h"
+
 namespace {
     void addCubeToMesh(Mesh& mesh, const glm::vec3& dimensions,
                        const glm::vec3& offset = {0, 0, 0})
@@ -94,15 +100,40 @@ Mesh createWireCubeMesh(const glm::vec3& dimensions)
     return cube;
 }
 
-Mesh createTerrainMesh(const glm::vec2& size)
+float getNoiseAt(float z, float vx, float vz)
+{
+    const float ROUGH = 1.2f;
+    const float SMOOTH = 15.0f;
+    const int OCTAVES = 10;
+
+    float vertexX = vx;
+    float vertexZ = vz + z * (TERRAIN_HEIGHT - 1);
+
+    float value = 0;
+    float acc = 0;
+    for (int i = 0; i < OCTAVES; i++) {
+        float freq = glm::pow(2.0f, i);
+        float amps = glm::pow(ROUGH, i);
+
+        float x = vertexX * freq / SMOOTH;
+        float z = vertexZ * freq / SMOOTH;
+
+        float noiseValue = glm::simplex(glm::vec2{x, z});
+        noiseValue = (noiseValue + 1.0f) / 2.0f;
+        value += noiseValue * amps;
+        acc += amps;
+    }
+    return value / acc;
+}
+
+Mesh createTerrainMesh(int terrainZIndex, const glm::vec2& size, float tileSize)
 {
     Mesh terrian;
-    float quadSize = 5.0f;
     for (int y = 0; y < size.y; y++) {
         for (int x = 0; x < size.x; x++) {
-            terrian.positions.push_back(x * quadSize);
-            terrian.positions.push_back(0);
-            terrian.positions.push_back(y * quadSize);
+            terrian.positions.push_back(x * tileSize);
+            terrian.positions.push_back(getNoiseAt((float)terrainZIndex, x, y) * 70 - 60);
+            terrian.positions.push_back(y * tileSize);
 
             terrian.normals.push_back(0);
             terrian.normals.push_back(1);

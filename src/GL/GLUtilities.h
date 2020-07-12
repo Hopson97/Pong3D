@@ -13,7 +13,7 @@ struct BufferedMesh {
     GLsizei indicesCount = 0;
     std::vector<GLuint> vbos;
 
-    void draw();
+    void draw() const;
 
     void destroy();
 };

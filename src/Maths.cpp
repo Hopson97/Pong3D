@@ -26,5 +26,5 @@ glm::mat4 createViewMartix(const glm::vec3& pos, const glm::vec3& rot)
 
 glm::mat4 createProjectionMatrix(float aspectRatio, float fov)
 {
-    return glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 256.0f);
+    return glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 1024.0f);
 }

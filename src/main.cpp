@@ -27,11 +27,12 @@ int main()
         return 1;
     }
     initGLDebug();
-    glCheck(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
+    glCheck(glClearColor(0.01f, 0.0f, 0.01f, 1.0f));
     glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
     glCheck(glEnable(GL_DEPTH_TEST));
     glCheck(glCullFace(GL_BACK));
     glCheck(glEnable(GL_CULL_FACE));
+    glCheck(glLineWidth(3.0f));
 
     // ImGUI
     IMGUI_CHECKVERSION();

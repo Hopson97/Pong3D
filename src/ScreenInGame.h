@@ -5,8 +5,16 @@
 #include "GL/GLUtilities.h"
 #include "GameObjects.h"
 #include "Maths.h"
+#include <SFML/System/Clock.hpp>
+
+#include <list>
 
 class ScreenInGame final : public Screen {
+    struct Terrain {
+        int index = 0;
+        glm::vec3 location;
+        BufferedMesh vao;
+    };
   public:
     ScreenInGame(ScreenStack* stack);
     ~ScreenInGame();
@@ -21,6 +29,11 @@ class ScreenInGame final : public Screen {
 
     void resetGame();
 
+    void addTerrain();
+
+    std::list<Terrain> m_terrains;
+    sf::Clock m_terrainSnakeTimer;
+
     Camera m_camera;
     Paddle m_player;
     Paddle m_enemy;
@@ -29,7 +42,6 @@ class ScreenInGame final : public Screen {
     BufferedMesh m_paddleObj;
     BufferedMesh m_ballObj;
     BufferedMesh m_roomObj;
-    BufferedMesh m_terrainObj;
 
     Shader m_shader;
     GLuint m_modelMatLoc = 0;
