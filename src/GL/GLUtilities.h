@@ -25,6 +25,20 @@ struct Shader {
     void destroy();
 };
 
+struct Framebuffer {
+    int width = 0;
+    int height = 0;
+
+    GLuint fbo = 0;
+    GLuint rbo = 0;
+    GLuint texture = 0;
+
+    void use();
+    void destroy();
+};
+
+Framebuffer makeFramebuffer(int width, int height);
+
 BufferedMesh bufferMesh(const Mesh& mesh);
 
 Shader loadShaderProgram(const std::string& vShaderName, const std::string& fShaderName);
