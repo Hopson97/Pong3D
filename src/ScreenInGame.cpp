@@ -131,9 +131,9 @@ void ScreenInGame::onUpdate(float dt)
     // Update camera
     m_camera.position.x = m_player.position.x + Paddle::WIDTH / 2;
     m_camera.position.y = m_player.position.y + Paddle::HEIGHT / 2;
-    m_camera.position.z = m_player.position.z - 3.0f;
-    // m_camera.rotation.y = m_camera.position.x - ROOM_SIZE / 2 + 180;
-    // m_camera.rotation.x = m_camera.position.y - ROOM_SIZE / 2;
+    m_camera.position.z = m_player.position.z - 4.0f;
+    // m_camera.rotation.y = (m_camera.position.x - ROOM_SIZE / 2) + 180;
+    // m_camera.rotation.x = (m_camera.position.y - ROOM_SIZE / 2);
 
     // Update terrain postions
     for (auto itr = m_terrains.begin(); itr != m_terrains.end();) {

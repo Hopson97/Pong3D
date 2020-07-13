@@ -14,6 +14,8 @@ struct BufferedMesh {
     std::vector<GLuint> vbos;
 
     void draw() const;
+    void addBuffer(const std::vector<GLfloat>& data);
+    void addIndexBuffer(const std::vector<GLuint>& data);
 
     void destroy();
 };
@@ -40,6 +42,7 @@ struct Framebuffer {
 Framebuffer makeFramebuffer(int width, int height);
 
 BufferedMesh bufferMesh(const Mesh& mesh);
+BufferedMesh bufferScreenMesh(const Mesh& mesh);
 
 Shader loadShaderProgram(const std::string& vShaderName, const std::string& fShaderName);
 void uniformMatrix4(GLuint location, glm::mat4& matrix);

@@ -43,4 +43,6 @@ experimental/
 
 *.zip
 
+# Other
 imgui.ini
+Pong/
