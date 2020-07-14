@@ -2,11 +2,11 @@
 
 #include "../Mesh.h"
 #include "GLDebug.h"
+#include <exception>
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <sstream>
-#include <exception>
 
 namespace {
     // For loading shaders
@@ -67,24 +67,29 @@ namespace {
     }
 } // namespace
 
-Framebuffer makeFramebuffer(int width, int height) { 
+Framebuffer makeFramebuffer(int width, int height)
+{
     Framebuffer framebuffer;
     framebuffer.width = width;
     framebuffer.height = height;
 
-    //Create framebuffer
+    // Create framebuffer
     glCheck(glGenFramebuffers(1, &framebuffer.fbo));
+    framebuffer.use();
 
     // Create texture
     glCheck(glGenTextures(1, &framebuffer.texture));
     glCheck(glActiveTexture(GL_TEXTURE0));
     glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.texture));
-    glCheck(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                 nullptr));
+    glCheck(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+                         GL_UNSIGNED_BYTE, nullptr));
     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    glCheck((GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
-    //Create renderbuffer
+    // Attatch the colour
+    glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                                   framebuffer.texture, 0));
+    // Create renderbuffer
     glCheck(glGenRenderbuffers(1, &framebuffer.rbo));
     glCheck(glBindRenderbuffer(GL_RENDERBUFFER, framebuffer.rbo));
     glCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
@@ -95,10 +100,8 @@ Framebuffer makeFramebuffer(int width, int height) {
         throw std::runtime_error("Renderbuffer failed to be created");
     }
 
-
     return framebuffer;
 }
-
 
 BufferedMesh bufferMesh(const Mesh& mesh)
 {
@@ -122,8 +125,8 @@ BufferedMesh bufferMesh(const Mesh& mesh)
     return bufferedMesh;
 }
 
-BufferedMesh bufferScreenMesh(const Mesh& mesh) 
-{ 
+BufferedMesh bufferScreenMesh(const Mesh& mesh)
+{
     BufferedMesh bufferedMesh;
     glCheck(glGenVertexArrays(1, &bufferedMesh.vao));
     glCheck(glBindVertexArray(bufferedMesh.vao));
@@ -172,8 +175,8 @@ void BufferedMesh::addBuffer(const std::vector<GLfloat>& data, int dims)
     GLuint vbo;
     glCheck(glGenBuffers(1, &vbo));
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-    glCheck(glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(data[0]),
-                         data.data(), GL_STATIC_DRAW));
+    glCheck(glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(data[0]), data.data(),
+                         GL_STATIC_DRAW));
     glCheck(glVertexAttribPointer(vbos.size(), dims, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0));
     glCheck(glEnableVertexAttribArray(vbos.size()));
     vbos.push_back(vbo);
@@ -185,8 +188,7 @@ void BufferedMesh::addIndexBuffer(const std::vector<GLuint>& data)
     glCheck(glGenBuffers(1, &elementVbo));
     glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementVbo));
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(data[0]),
-                         data.data(),
-                         GL_STATIC_DRAW));
+                         data.data(), GL_STATIC_DRAW));
     vbos.push_back(elementVbo);
     indicesCount = data.size();
 }
@@ -216,7 +218,7 @@ void Framebuffer::use()
     glCheck(glViewport(0, 0, width, height));
 }
 
-void Framebuffer::destroy() 
+void Framebuffer::destroy()
 {
     glCheck(glDeleteFramebuffers(1, &fbo));
     glCheck(glDeleteRenderbuffers(1, &rbo));

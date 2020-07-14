@@ -1,4 +1,6 @@
 #include "GL/GLDebug.h"
+#include "GL/GLUtilities.h"
+#include "Mesh.h"
 #include "Screen.h"
 #include "ScreenInGame.h"
 #include "ScreenMainMenu.h"
@@ -27,7 +29,7 @@ int main()
         return 1;
     }
     initGLDebug();
-    glCheck(glClearColor(0.01f, 0.0f, 0.01f, 1.0f));
+    glCheck(glClearColor(0.11f, 0.0f, 0.01f, 1.0f));
     glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
     glCheck(glEnable(GL_DEPTH_TEST));
     glCheck(glCullFace(GL_BACK));
@@ -50,6 +52,11 @@ int main()
     screens.pushScreen(std::make_unique<ScreenMainMenu>(&screens));
     screens.update();
 
+    // Framebuffer stuff
+    auto framebuffer = makeFramebuffer(window.getSize().x, window.getSize().y);
+    auto screenShader = loadShaderProgram("screen", "screen");
+    auto screenRender = bufferMesh(createScreenMesh());
+    
     // Main loop
     sf::Clock deltaTimer;
     while (window.isOpen() && screens.hasScreen()) {
@@ -69,7 +76,20 @@ int main()
         ImGui_ImplSfml_NewFrame();
         ImGui::NewFrame();
 
+        // Render to the framebuffer
+        framebuffer.use();
+        glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
         screen.onRender();
+
+        // Render to the window
+        glCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
+        glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
+
+        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.texture));
+        glCheck(glBindVertexArray(screenRender.vao));
+        screenShader.use();
+        screenRender.draw();
 
         // Display
         ImGui::Render();
@@ -80,6 +100,8 @@ int main()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSfml_Shutdown();
     ImGui::DestroyContext();
+
+    // framebuffer.destroy();
 
     return 0;
 }
