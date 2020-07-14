@@ -106,8 +106,8 @@ BufferedMesh bufferMesh(const Mesh& mesh)
     glCheck(glGenVertexArrays(1, &bufferedMesh.vao));
     glCheck(glBindVertexArray(bufferedMesh.vao));
 
-    bufferedMesh.addBuffer(mesh.positions);
-    bufferedMesh.addBuffer(mesh.normals);
+    bufferedMesh.addBuffer(mesh.positions, 3);
+    bufferedMesh.addBuffer(mesh.normals, 3);
 
     // Index buffer
     GLuint elementVbo;
@@ -128,8 +128,8 @@ BufferedMesh bufferScreenMesh(const Mesh& mesh)
     glCheck(glGenVertexArrays(1, &bufferedMesh.vao));
     glCheck(glBindVertexArray(bufferedMesh.vao));
 
-    bufferedMesh.addBuffer(mesh.positions);
-    bufferedMesh.addBuffer(mesh.textureCoords);
+    bufferedMesh.addBuffer(mesh.positions, 2);
+    bufferedMesh.addBuffer(mesh.textureCoords, 2);
     bufferedMesh.addIndexBuffer(mesh.indices);
 
     return bufferedMesh;
@@ -167,14 +167,14 @@ void BufferedMesh::draw() const
     glCheck(glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, nullptr));
 }
 
-void BufferedMesh::addBuffer(const std::vector<GLfloat>& data) 
+void BufferedMesh::addBuffer(const std::vector<GLfloat>& data, int dims)
 {
     GLuint vbo;
     glCheck(glGenBuffers(1, &vbo));
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, vbo));
     glCheck(glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(data[0]),
                          data.data(), GL_STATIC_DRAW));
-    glCheck(glVertexAttribPointer(vbos.size(), 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0));
+    glCheck(glVertexAttribPointer(vbos.size(), dims, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0));
     glCheck(glEnableVertexAttribArray(vbos.size()));
     vbos.push_back(vbo);
 }

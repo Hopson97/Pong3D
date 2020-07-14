@@ -14,7 +14,7 @@ struct BufferedMesh {
     std::vector<GLuint> vbos;
 
     void draw() const;
-    void addBuffer(const std::vector<GLfloat>& data);
+    void addBuffer(const std::vector<GLfloat>& data, int dims);
     void addIndexBuffer(const std::vector<GLuint>& data);
 
     void destroy();
