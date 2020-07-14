@@ -9,11 +9,13 @@
 
 struct Mesh {
     std::vector<GLfloat> positions;
+    std::vector<GLfloat> textureCoords;
     std::vector<GLfloat> normals;
     std::vector<GLuint> indices;
     int currentIndex = 0;
 };
 
+Mesh createScreenMesh();
 Mesh createCubeMesh(const glm::vec3& dimensions);
 Mesh createWireCubeMesh(const glm::vec3& dimensions);
 Mesh createTerrainMesh(int terrainZIndex, const glm::vec2& size, float tileSize);
