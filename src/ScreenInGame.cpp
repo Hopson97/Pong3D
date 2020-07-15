@@ -170,7 +170,8 @@ void ScreenInGame::onRender()
     loadUniform(m_pvMatLoc, projectionView);
 
     // Update lighting
-    loadUniform(m_lightLoc, m_camera.position);
+    loadUniform(m_lightLoc,
+                {m_camera.position.x, m_camera.position.y * 2, m_camera.position.z});
 
     // Render room
     loadUniform(m_colourLoc, {0.0, 0.65, 0.7});

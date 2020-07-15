@@ -29,7 +29,7 @@ int main()
         return 1;
     }
     initGLDebug();
-    glCheck(glClearColor(0.11f, 0.0f, 0.01f, 1.0f));
+    glCheck(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
     glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
     glCheck(glEnable(GL_DEPTH_TEST));
     glCheck(glCullFace(GL_BACK));
@@ -55,7 +55,7 @@ int main()
     // Framebuffer stuff
     auto framebuffer = makeFramebuffer(window.getSize().x, window.getSize().y);
     auto screenShader = loadShaderProgram("screen", "screen");
-    auto screenRender = bufferMesh(createScreenMesh());
+    auto screenRender = bufferScreenMesh(createScreenMesh());
     
     // Main loop
     sf::Clock deltaTimer;
@@ -71,7 +71,6 @@ int main()
         screen.onInput();
         screen.onUpdate(deltaTimer.restart().asSeconds());
 
-        glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSfml_NewFrame();
         ImGui::NewFrame();
@@ -86,9 +85,10 @@ int main()
         glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
 
-        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.texture));
         glCheck(glBindVertexArray(screenRender.vao));
         screenShader.use();
+
+        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.texture));
         screenRender.draw();
 
         // Display
