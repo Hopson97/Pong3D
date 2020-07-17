@@ -12,7 +12,7 @@
 class ScreenInGame final : public Screen {
     struct Terrain {
         int index = 0;
-        glm::vec3 location;
+        glm::vec3 location{0.0f};
         BufferedMesh vao;
     };
   public:

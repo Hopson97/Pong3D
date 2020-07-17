@@ -10,9 +10,9 @@ ScreenInGame::ScreenInGame(ScreenStack* stack)
     : Screen(stack)
     , m_camera(1280.0f / 720.0f, 80)
 {
-    Mesh roomMesh = createWireCubeMesh({ROOM_SIZE, ROOM_SIZE, ROOM_DEPTH});
+    Mesh roomMesh = createWireCubeMesh({ROOM_SIZE, ROOM_SIZE, ROOM_DEPTH}, 0.3f);
     Mesh ballMesh = createWireCubeMesh({Ball::WIDTH, Ball::HEIGHT, Ball::WIDTH});
-    Mesh paddle = createWireCubeMesh({Paddle::WIDTH, Paddle::HEIGHT, 0.5f});
+    Mesh paddle = createWireCubeMesh({Paddle::WIDTH, Paddle::HEIGHT, 0.25f});
     Mesh terrain = createTerrainMesh(0, {TERRAIN_WIDTH, TERRAIN_HEIGHT}, TILE_SIZE);
 
     Terrain firstTerrain;
@@ -132,8 +132,8 @@ void ScreenInGame::onUpdate(float dt)
     m_camera.position.x = m_player.position.x + Paddle::WIDTH / 2;
     m_camera.position.y = m_player.position.y + Paddle::HEIGHT / 2;
     m_camera.position.z = m_player.position.z - 4.0f;
-    // m_camera.rotation.y = (m_camera.position.x - ROOM_SIZE / 2) + 180;
-    // m_camera.rotation.x = (m_camera.position.y - ROOM_SIZE / 2);
+    m_camera.rotation.y = (m_camera.position.x - ROOM_SIZE / 2) + 180;
+    m_camera.rotation.x = (m_camera.position.y - ROOM_SIZE / 2) / 2;
 
     // Update terrain postions
     for (auto itr = m_terrains.begin(); itr != m_terrains.end();) {
@@ -171,7 +171,7 @@ void ScreenInGame::onRender()
 
     // Update lighting
     loadUniform(m_lightLoc,
-                {m_camera.position.x, m_camera.position.y * 2, m_camera.position.z});
+                {m_camera.position.x, m_camera.position.y, m_camera.position.z});
 
     // Render room
     loadUniform(m_colourLoc, {0.0, 0.65, 0.7});
@@ -198,6 +198,8 @@ void ScreenInGame::onRender()
     modelmatrix = createModelMatrix(m_ball.position, m_ball.rotation);
     loadUniform(m_modelMatLoc, modelmatrix);
     m_ballObj.draw();
+
+
 
     // Render terrain
     for (const auto& terrain : m_terrains) {
