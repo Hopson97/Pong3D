@@ -37,6 +37,9 @@ ScreenInGame::ScreenInGame(ScreenStack* stack)
     m_pvMatLoc = m_shader.getUniformLocation("projectionViewMatrix");
     m_lightLoc = m_shader.getUniformLocation("lightPosition");
     m_colourLoc = m_shader.getUniformLocation("colour");
+
+    // Update lighting
+    loadUniform(m_lightLoc, {ROOM_SIZE / 2.0f, ROOM_SIZE, -100});
 }
 
 ScreenInGame::~ScreenInGame()
@@ -138,8 +141,8 @@ void ScreenInGame::onUpdate(float dt)
     // Update terrain postions
     for (auto itr = m_terrains.begin(); itr != m_terrains.end();) {
         auto& loc = itr->location;
-        loc.z -= 25.0f * dt;
-        loc.x += std::sin(m_terrainSnakeTimer.getElapsedTime().asSeconds()) / 8.0f;
+        loc.z -= 45.0f * dt;
+        loc.x += std::sin(m_terrainSnakeTimer.getElapsedTime().asSeconds()) / 4.0f;
         if (loc.z < -TERRAIN_LENGTH - 10.0f) {
             itr->vao.destroy();
             itr = m_terrains.erase(itr);
@@ -169,9 +172,7 @@ void ScreenInGame::onRender()
     auto projectionView = m_camera.getProjectionView();
     loadUniform(m_pvMatLoc, projectionView);
 
-    // Update lighting
-    loadUniform(m_lightLoc,
-                {m_camera.position.x, m_camera.position.y, m_camera.position.z});
+
 
     // Render room
     loadUniform(m_colourLoc, {0.0, 0.65, 0.7});
@@ -207,7 +208,7 @@ void ScreenInGame::onRender()
         modelmatrix = createModelMatrix(terrain.location, {0, 0, 0});
         loadUniform(m_modelMatLoc, modelmatrix);
 
-        loadUniform(m_colourLoc, {1.0, 0.0, 1.0});
+        loadUniform(m_colourLoc, {1.25, 0.0, 1.25});
         glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
         terrain.vao.draw();
 

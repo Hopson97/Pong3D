@@ -11,8 +11,11 @@ out vec3 passNormal;
 
 void main() {
     vec4 worldPos = modelMatrix * vec4(inVertexCoord, 1.0);
-    //worldPos.y += (worldPos.x / 32) * (worldPos.x / 32);
-    //worldPos.y += (worldPos.z / 32) * (worldPos.z / 32);
+
+    float div = 40;
+
+    worldPos.y += (worldPos.x / div) * (worldPos.x / div);
+    worldPos.y += (worldPos.z / div) * (worldPos.z / div);
     gl_Position = projectionViewMatrix * worldPos;
 
     passFragPosition = vec3(modelMatrix * vec4(inVertexCoord, 1.0));

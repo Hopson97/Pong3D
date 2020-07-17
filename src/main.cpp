@@ -28,12 +28,15 @@ int main()
         return 1;
     }
     initGLDebug();
-    glCheck(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
+    glCheck(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
     glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
     glCheck(glEnable(GL_DEPTH_TEST));
     glCheck(glCullFace(GL_BACK));
     glCheck(glEnable(GL_CULL_FACE));
-    glCheck(glLineWidth(3.0f));
+    glCheck(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    glCheck(glLineWidth(2.0f));
+
+    glEnable(GL_MULTISAMPLE);  
 
     // ImGUI
     ImGui_SFML_OpenGL3::init(window);
@@ -50,9 +53,25 @@ int main()
 
     // Framebuffer stuff
     auto framebuffer = makeFramebuffer(window.getSize().x, window.getSize().y);
+
+    // Blur render pass stuff
+    int blurRes = 4;
+    auto blurFboHori =
+        makeFramebuffer(window.getSize().x / blurRes, window.getSize().y / blurRes);
+    auto blurFboVert =
+        makeFramebuffer(window.getSize().x / blurRes, window.getSize().y / blurRes);
+
+    auto blurShader = loadShaderProgram("screen", "blur");
+    GLuint blurLocation = blurShader.getUniformLocation("horizontalBlur");
+
+    // Final pass
     auto screenShader = loadShaderProgram("screen", "screen");
+    screenShader.use();
+    loadUniform(screenShader.getUniformLocation("tex"), 0);
+    loadUniform(screenShader.getUniformLocation("tex2"), 1);
+
     auto screenRender = bufferScreenMesh(createScreenMesh());
-    
+
     // Main loop
     sf::Clock deltaTimer;
     while (window.isOpen() && screens.hasScreen()) {
@@ -68,23 +87,61 @@ int main()
         screen.onInput();
         screen.onUpdate(deltaTimer.restart().asSeconds());
 
-
-        // Render to the framebuffer
+        // Render the scene to a framebuffer
+        glCheck(glEnable(GL_DEPTH_TEST));
         framebuffer.use();
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
         screen.onRender();
 
-        glActiveTexture(GL_TEXTURE1);
+        // Begin Post Processing
+        glCheck(glBindVertexArray(screenRender.vao));
+        glCheck(glDisable(GL_DEPTH_TEST));
+        glCheck(glActiveTexture(GL_TEXTURE0));
+        blurShader.use();
+
+        // Blur the image horizontal
+        blurFboHori.use();
+        glCheck(glClear(GL_COLOR_BUFFER_BIT));
+        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[1]));
+        loadUniform(blurLocation, 1);
+        screenRender.draw();
+
+        // Blur the image vertical
+        blurFboVert.use();
+        glCheck(glClear(GL_COLOR_BUFFER_BIT));
+        glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0]));
+        loadUniform(blurLocation, 0);
+        screenRender.draw();
+
+        
+        // Keep on blurring
+        for (int i = 0; i < 10; i++) {
+            blurFboHori.use();
+            glCheck(glClear(GL_COLOR_BUFFER_BIT));
+            glCheck(glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0]));
+            loadUniform(blurLocation, 1);
+            screenRender.draw();
+
+            blurFboVert.use();
+            glCheck(glClear(GL_COLOR_BUFFER_BIT));
+            glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0]));
+            loadUniform(blurLocation, 0);
+            screenRender.draw();
+        }
+        
+
 
         // Render to the window
+        screenShader.use();
         glCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
-        glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
+        glCheck(glClear(GL_COLOR_BUFFER_BIT));
 
-        glCheck(glBindVertexArray(screenRender.vao));
-        screenShader.use();
-
+        glCheck(glActiveTexture(GL_TEXTURE0));
+        glCheck(glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0]));
+        glCheck(glActiveTexture(GL_TEXTURE1));
         glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[0]));
+
         screenRender.draw();
 
         // Display
@@ -95,6 +152,11 @@ int main()
     ImGui_SFML_OpenGL3::shutdown();
 
     framebuffer.destroy();
+    blurFboHori.destroy();
+    blurFboVert.destroy();
 
+    blurShader.destroy();
+    screenRender.destroy();
+    screenShader.destroy();
     return 0;
 }

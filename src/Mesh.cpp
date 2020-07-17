@@ -160,7 +160,7 @@ Mesh createTerrainMesh(int terrainZIndex, const glm::vec2& size, float tileSize)
         for (int x = 0; x < size.x; x++) {
             terrian.positions.push_back(x * tileSize);
             terrian.positions.push_back(
-                getNoiseAt((float)terrainZIndex, (float)x, (float)y) * 90.0f - 80.0f);
+                getNoiseAt((float)terrainZIndex, (float)x, (float)y) * 190.0f - 180.0f);
             terrian.positions.push_back(y * tileSize);
 
             terrian.normals.push_back(0);

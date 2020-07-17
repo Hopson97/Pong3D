@@ -6,8 +6,8 @@ constexpr float ROOM_SIZE = 30.0f;
 constexpr float ROOM_DEPTH = 50.0f;
 constexpr float BALL_SPEED = 15.0f;
 
-constexpr float TERRAIN_HEIGHT = 25.0f;
-constexpr float TERRAIN_WIDTH = 70.0f;
+constexpr float TERRAIN_HEIGHT = 35.0f;
+constexpr float TERRAIN_WIDTH = 75.0f;
 constexpr float TILE_SIZE = 30.0f;
 constexpr float TERRAIN_LENGTH = TERRAIN_HEIGHT * TILE_SIZE;
 
