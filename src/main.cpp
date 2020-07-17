@@ -7,8 +7,7 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Window.hpp>
 #include <imgui/imgui.h>
-#include <imgui_impl/imgui_impl_opengl3.h>
-#include <imgui_impl/imgui_impl_sfml.h>
+#include <imgui_impl/imgui_wrapper.h>
 #include <iostream>
 
 int main()
@@ -37,10 +36,7 @@ int main()
     glCheck(glLineWidth(3.0f));
 
     // ImGUI
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui_ImplSfml_Init(&window);
-    ImGui_ImplOpenGL3_Init();
+    ImGui_SFML_OpenGL3::init(window);
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowRounding = 2;
     style.FrameRounding = 0;
@@ -66,19 +62,19 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
         }
+        ImGui_SFML_OpenGL3::startFrame();
 
         Screen& screen = screens.peekScreen();
         screen.onInput();
         screen.onUpdate(deltaTimer.restart().asSeconds());
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSfml_NewFrame();
-        ImGui::NewFrame();
 
         // Render to the framebuffer
         framebuffer.use();
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
         screen.onRender();
+
+        glActiveTexture(GL_TEXTURE1);
 
         // Render to the window
         glCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
@@ -88,20 +84,17 @@ int main()
         glCheck(glBindVertexArray(screenRender.vao));
         screenShader.use();
 
-        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.texture));
+        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[0]));
         screenRender.draw();
 
         // Display
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui_SFML_OpenGL3::endFrame();
         window.display();
         screens.update();
     }
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSfml_Shutdown();
-    ImGui::DestroyContext();
+    ImGui_SFML_OpenGL3::shutdown();
 
-    // framebuffer.destroy();
+    framebuffer.destroy();
 
     return 0;
 }

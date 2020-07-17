@@ -15,6 +15,8 @@
 // example of using this. If you are new to dear imgui, read examples/README.txt and read
 // the documentation at the top of imgui.cpp. https://github.com/ocornut/imgui
 
+// This is from here: https://github.com/ocornut/imgui/pull/2731/files
+
 #include "../imgui/imgui.h"
 #include "imgui_impl_sfml.h"
 
