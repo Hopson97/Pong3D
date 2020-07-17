@@ -97,7 +97,7 @@ Mesh createCubeMesh(const glm::vec3& dimensions)
     return cube;
 }
 
-Mesh createWireCubeMesh(const glm::vec3& dimensions)
+Mesh createWireCubeMesh(const glm::vec3& dimensions, float wireThickness)
 {
     Mesh cube;
     float wireSize = 0.1f;
@@ -105,33 +105,33 @@ Mesh createWireCubeMesh(const glm::vec3& dimensions)
     float h = dimensions.y;
     float d = dimensions.z;
     // Front
-    addCubeToMesh(cube, {w, wireSize, wireSize});
-    addCubeToMesh(cube, {w, wireSize, wireSize}, {0, h, 0});
-    addCubeToMesh(cube, {wireSize, h, wireSize});
-    addCubeToMesh(cube, {wireSize, h, wireSize}, {w, 0, 0});
+    addCubeToMesh(cube, {w, wireThickness, wireThickness});
+    addCubeToMesh(cube, {w, wireThickness, wireThickness}, {0, h, 0});
+    addCubeToMesh(cube, {wireThickness, h, wireThickness});
+    addCubeToMesh(cube, {wireThickness, h, wireThickness}, {w, 0, 0});
 
     // Back
-    addCubeToMesh(cube, {w, wireSize, wireSize}, {0, 0, d});
-    addCubeToMesh(cube, {w, wireSize, wireSize}, {0, h, d});
-    addCubeToMesh(cube, {wireSize, h, wireSize}, {0, 0, d});
-    addCubeToMesh(cube, {wireSize, h, wireSize}, {w, 0, d});
+    addCubeToMesh(cube, {w, wireThickness, wireThickness}, {0, 0, d});
+    addCubeToMesh(cube, {w, wireThickness, wireThickness}, {0, h, d});
+    addCubeToMesh(cube, {wireThickness, h, wireThickness}, {0, 0, d});
+    addCubeToMesh(cube, {wireThickness, h, wireThickness}, {w, 0, d});
 
     // Right
-    addCubeToMesh(cube, {wireSize, wireSize, d}, {0, h, 0});
-    addCubeToMesh(cube, {wireSize, wireSize, d});
+    addCubeToMesh(cube, {wireThickness, wireThickness, d}, {0, h, 0});
+    addCubeToMesh(cube, {wireThickness, wireThickness, d});
 
     // Left
-    addCubeToMesh(cube, {wireSize, wireSize, d}, {w, h, 0});
-    addCubeToMesh(cube, {wireSize, wireSize, d}, {w, 0, 0});
+    addCubeToMesh(cube, {wireThickness, wireThickness, d}, {w, h, 0});
+    addCubeToMesh(cube, {wireThickness, wireThickness, d}, {w, 0, 0});
 
     return cube;
 }
 
 float getNoiseAt(float z, float vx, float vz)
 {
-    const float ROUGH = 1.2f;
-    const float SMOOTH = 15.0f;
-    const int OCTAVES = 10;
+    const float ROUGH = 1.8f;
+    const float SMOOTH = 11.0f;
+    const int OCTAVES = 5;
 
     float vertexX = vx;
     float vertexZ = vz + z * (TERRAIN_HEIGHT - 1);
@@ -159,7 +159,8 @@ Mesh createTerrainMesh(int terrainZIndex, const glm::vec2& size, float tileSize)
     for (int y = 0; y < size.y; y++) {
         for (int x = 0; x < size.x; x++) {
             terrian.positions.push_back(x * tileSize);
-            terrian.positions.push_back(getNoiseAt((float)terrainZIndex, x, y) * 70 - 60);
+            terrian.positions.push_back(
+                getNoiseAt((float)terrainZIndex, (float)x, (float)y) * 90.0f - 80.0f);
             terrian.positions.push_back(y * tileSize);
 
             terrian.normals.push_back(0);
@@ -169,11 +170,11 @@ Mesh createTerrainMesh(int terrainZIndex, const glm::vec2& size, float tileSize)
     }
     for (int y = 0; y < size.y - 1; y++) {
         for (int x = 0; x < size.x - 1; x++) {
-            GLuint index = x + y * size.x;
+            GLuint index = x + y * static_cast<int>(size.x);
             terrian.indices.push_back(index);
-            terrian.indices.push_back(index + size.x);
-            terrian.indices.push_back(index + size.x + 1);
-            terrian.indices.push_back(index + size.x + 1);
+            terrian.indices.push_back(index + static_cast<int>(size.x));
+            terrian.indices.push_back(index + static_cast<int>(size.x) + 1);
+            terrian.indices.push_back(index + static_cast<int>(size.x) + 1);
             terrian.indices.push_back(index + 1);
             terrian.indices.push_back(index);
         }
