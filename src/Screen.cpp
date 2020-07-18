@@ -65,7 +65,8 @@ bool imguiBeginCustom(const char* name)
                             ImGuiCond_Always);
     return ImGui::Begin(name, nullptr,
                         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-                            ImGuiWindowFlags_NoCollapse);
+                            ImGuiWindowFlags_NoCollapse |
+                            ImGuiWindowFlags_AlwaysAutoResize);
 }
 
 bool imguiButtonCustom(const char* text)

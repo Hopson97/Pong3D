@@ -4,11 +4,26 @@
 #include "Screen.h"
 #include "ScreenInGame.h"
 #include "ScreenMainMenu.h"
+#include "Settings.h"
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Window.hpp>
 #include <imgui/imgui.h>
 #include <imgui_impl/imgui_wrapper.h>
 #include <iostream>
+
+void renderFpsMenu(float windowWidth)
+{
+    // Render GUI Stuff
+    auto flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration |
+                 ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+                 ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+    ImGui::SetNextWindowPos(ImVec2(windowWidth - 200, 10));
+    if (ImGui::Begin("FPS", nullptr, flags)) {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+    }
+    ImGui::End();
+}
 
 int main()
 {
@@ -36,7 +51,7 @@ int main()
     glCheck(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     glCheck(glLineWidth(2.0f));
 
-    glEnable(GL_MULTISAMPLE);  
+    glEnable(GL_MULTISAMPLE);
 
     // ImGUI
     ImGui_SFML_OpenGL3::init(window);
@@ -67,8 +82,9 @@ int main()
     // Final pass
     auto screenShader = loadShaderProgram("screen", "screen");
     screenShader.use();
-    loadUniform(screenShader.getUniformLocation("tex"), 0);
-    loadUniform(screenShader.getUniformLocation("tex2"), 1);
+    loadUniform(screenShader.getUniformLocation("bloomTexture"), 0);
+    loadUniform(screenShader.getUniformLocation("colourTexture"), 1);
+    auto bloomToggle = screenShader.getUniformLocation("bloomToggle");
 
     auto screenRender = bufferScreenMesh(createScreenMesh());
 
@@ -82,6 +98,11 @@ int main()
                 window.close();
         }
         ImGui_SFML_OpenGL3::startFrame();
+
+        if (Settings::get().showFps) {
+
+            renderFpsMenu(window.getSize().x);
+        }
 
         Screen& screen = screens.peekScreen();
         screen.onInput();
@@ -97,39 +118,38 @@ int main()
         glCheck(glBindVertexArray(screenRender.vao));
         glCheck(glDisable(GL_DEPTH_TEST));
         glCheck(glActiveTexture(GL_TEXTURE0));
-        blurShader.use();
 
-        // Blur the image horizontal
-        blurFboHori.use();
-        glCheck(glClear(GL_COLOR_BUFFER_BIT));
-        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[1]));
-        loadUniform(blurLocation, 1);
-        screenRender.draw();
-
-        // Blur the image vertical
-        blurFboVert.use();
-        glCheck(glClear(GL_COLOR_BUFFER_BIT));
-        glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0]));
-        loadUniform(blurLocation, 0);
-        screenRender.draw();
-
-        
-        // Keep on blurring
-        for (int i = 0; i < 10; i++) {
+        if (Settings::get().isBoom) {
+            blurShader.use();
+            // Blur the image horizontal
             blurFboHori.use();
             glCheck(glClear(GL_COLOR_BUFFER_BIT));
-            glCheck(glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0]));
+            glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[1]));
             loadUniform(blurLocation, 1);
             screenRender.draw();
 
+            // Blur the image vertical
             blurFboVert.use();
             glCheck(glClear(GL_COLOR_BUFFER_BIT));
             glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0]));
             loadUniform(blurLocation, 0);
             screenRender.draw();
-        }
-        
 
+            // Keep on blurring
+            for (int i = 0; i < 10; i++) {
+                blurFboHori.use();
+                glCheck(glClear(GL_COLOR_BUFFER_BIT));
+                glCheck(glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0]));
+                loadUniform(blurLocation, 1);
+                screenRender.draw();
+
+                blurFboVert.use();
+                glCheck(glClear(GL_COLOR_BUFFER_BIT));
+                glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0]));
+                loadUniform(blurLocation, 0);
+                screenRender.draw();
+            }
+        }
 
         // Render to the window
         screenShader.use();
@@ -139,8 +159,11 @@ int main()
 
         glCheck(glActiveTexture(GL_TEXTURE0));
         glCheck(glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0]));
+
         glCheck(glActiveTexture(GL_TEXTURE1));
         glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[0]));
+
+        loadUniform(bloomToggle, Settings::get().isBoom);
 
         screenRender.draw();
 

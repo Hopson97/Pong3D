@@ -25,6 +25,7 @@ class ScreenInGame final : public Screen {
 
   private:
     bool m_isPaused = false;
+    bool m_showSettings = false;
     void showPauseMenu();
 
     void resetGame();

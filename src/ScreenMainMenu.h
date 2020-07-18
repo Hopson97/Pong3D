@@ -14,7 +14,4 @@ class ScreenMainMenu final : public Screen {
 
   private:
     Menu m_activeMenu = Menu::MainMenu;
-
-    void showMainMenu();
-    void showSettingsMenu();
 };

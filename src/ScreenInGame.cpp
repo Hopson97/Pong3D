@@ -2,6 +2,7 @@
 
 #include "GL/GLDebug.h"
 #include "Mesh.h"
+#include "Settings.h"
 #include <SFML/Window/Keyboard.hpp>
 #include <imgui/imgui.h>
 #include <iostream>
@@ -172,8 +173,6 @@ void ScreenInGame::onRender()
     auto projectionView = m_camera.getProjectionView();
     loadUniform(m_pvMatLoc, projectionView);
 
-
-
     // Render room
     loadUniform(m_colourLoc, {0.0, 0.65, 0.7});
     glCheck(glBindVertexArray(m_roomObj.vao));
@@ -200,8 +199,6 @@ void ScreenInGame::onRender()
     loadUniform(m_modelMatLoc, modelmatrix);
     m_ballObj.draw();
 
-
-
     // Render terrain
     for (const auto& terrain : m_terrains) {
         glCheck(glBindVertexArray(terrain.vao.vao));
@@ -218,7 +215,12 @@ void ScreenInGame::onRender()
     }
 
     if (m_isPaused) {
-        showPauseMenu();
+        if (m_showSettings) {
+            Settings::get().showSettingsMenu([&] { m_showSettings = false; });
+        }
+        else {
+            showPauseMenu();
+        }
     }
 }
 
@@ -227,6 +229,9 @@ void ScreenInGame::showPauseMenu()
     if (imguiBeginCustom("P A U S E D")) {
         if (imguiButtonCustom("Resume Game")) {
             m_isPaused = false;
+        }
+        if (imguiButtonCustom("Settings")) {
+            m_showSettings = true;
         }
         if (imguiButtonCustom("Reset Game")) {
             resetGame();
