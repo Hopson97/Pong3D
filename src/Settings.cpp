@@ -12,7 +12,16 @@ Settings::Settings()
             inFile >> showFps;
         }
         else if (val == "show_bloom") {
-            inFile >> isBoom;
+            inFile >> useBloomShaders;
+        }
+        else if (val == "render_terrain") {
+            inFile >> renderTerrain;
+        }
+        else if (val == "sway_terrain") {
+            inFile >> swayTerrain;
+        }
+        else if (val == "move_terrain") {
+            inFile >> moveTerrain;
         }
     }
 }
@@ -21,7 +30,10 @@ Settings::~Settings()
 {
     std::ofstream outFile("data/settings.txt");
     outFile << "show_fps" << ' ' << showFps << '\n';
-    outFile << "show_bloom" << ' ' << isBoom << '\n';
+    outFile << "show_bloom" << ' ' << useBloomShaders << '\n';
+    outFile << "render_terrain" << ' ' << renderTerrain << '\n';
+    outFile << "sway_terrain" << ' ' << swayTerrain << '\n';
+    outFile << "move_terrain" << ' ' << moveTerrain << '\n';
 }
 
 void Settings::showSettingsMenu(std::function<void(void)> onBackPressed)
@@ -33,7 +45,13 @@ void Settings::showSettingsMenu(std::function<void(void)> onBackPressed)
 
         ImGui::Separator();
         ImGui::Text("Video Settings");
-        ImGui::Checkbox("Bloom", &isBoom);
+        ImGui::Checkbox("Bloom", &useBloomShaders);        
+        ImGui::Checkbox("Render Terrain", &renderTerrain);
+
+        ImGui::Separator();
+        ImGui::Text("Misc Settings");
+        ImGui::Checkbox("Sway Terrain", &swayTerrain);
+        ImGui::Checkbox("Move Terrain", &moveTerrain);
 
         ImGui::Separator();
         if (imguiButtonCustom("Back")) {

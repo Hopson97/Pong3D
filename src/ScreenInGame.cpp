@@ -66,7 +66,7 @@ void ScreenInGame::onInput()
     if (m_isPaused) {
         return;
     }
-    float SPEED = 1.5f;
+    float SPEED = 0.8f;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
         m_player.velocity.y += SPEED;
     }
@@ -131,8 +131,7 @@ void ScreenInGame::onUpdate(float dt)
         m_enemyScore++;
         m_ball.velocity.z = BALL_SPEED;
     }
-
-    // Update camera
+        // Update camera
     m_camera.position.x = m_player.position.x + Paddle::WIDTH / 2;
     m_camera.position.y = m_player.position.y + Paddle::HEIGHT / 2;
     m_camera.position.z = m_player.position.z - 4.0f;
@@ -140,17 +139,25 @@ void ScreenInGame::onUpdate(float dt)
     m_camera.rotation.x = (m_camera.position.y - ROOM_SIZE / 2) / 2;
 
     // Update terrain postions
-    for (auto itr = m_terrains.begin(); itr != m_terrains.end();) {
-        auto& loc = itr->location;
-        loc.z -= 45.0f * dt;
-        loc.x += std::sin(m_terrainSnakeTimer.getElapsedTime().asSeconds()) / 4.0f;
-        if (loc.z < -TERRAIN_LENGTH - 10.0f) {
-            itr->vao.destroy();
-            itr = m_terrains.erase(itr);
-            addTerrain();
-        }
-        else {
-            itr++;
+    if (Settings::get().renderTerrain) {
+        for (auto itr = m_terrains.begin(); itr != m_terrains.end();) {
+
+            auto& loc = itr->location;
+            if (Settings::get().swayTerrain) {
+                loc.x +=
+                    std::sin(m_terrainSnakeTimer.getElapsedTime().asSeconds()) * 30.0f * dt;
+            }
+            if (Settings::get().moveTerrain) {
+                loc.z -= 45.0f * dt;
+            }
+            if (loc.z < -TERRAIN_LENGTH - 10.0f) {
+                itr->vao.destroy();
+                itr = m_terrains.erase(itr);
+                addTerrain();
+            }
+            else {
+                itr++;
+            }
         }
     }
 }
@@ -200,18 +207,20 @@ void ScreenInGame::onRender()
     m_ballObj.draw();
 
     // Render terrain
-    for (const auto& terrain : m_terrains) {
-        glCheck(glBindVertexArray(terrain.vao.vao));
-        modelmatrix = createModelMatrix(terrain.location, {0, 0, 0});
-        loadUniform(m_modelMatLoc, modelmatrix);
+    if (Settings::get().renderTerrain) {
+        for (const auto& terrain : m_terrains) {
+            glCheck(glBindVertexArray(terrain.vao.vao));
+            modelmatrix = createModelMatrix(terrain.location, {0, 0, 0});
+            loadUniform(m_modelMatLoc, modelmatrix);
 
-        loadUniform(m_colourLoc, {1.25, 0.0, 1.25});
-        glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
-        terrain.vao.draw();
+            loadUniform(m_colourLoc, {1.25, 0.0, 1.25});
+            glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+            terrain.vao.draw();
 
-        loadUniform(m_colourLoc, {0.0, 0.0, 0.0});
-        glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
-        terrain.vao.draw();
+            loadUniform(m_colourLoc, {0.0, 0.0, 0.0});
+            glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+            terrain.vao.draw();
+        }
     }
 
     if (m_isPaused) {

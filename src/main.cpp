@@ -10,6 +10,8 @@
 #include <imgui/imgui.h>
 #include <imgui_impl/imgui_wrapper.h>
 #include <iostream>
+#include <SFML/GpuPreference.hpp>
+
 
 void renderFpsMenu(float windowWidth)
 {
@@ -25,6 +27,8 @@ void renderFpsMenu(float windowWidth)
     ImGui::End();
 }
 
+SFML_DEFINE_DISCRETE_GPU_PREFERENCE 
+
 int main()
 {
     // Init Window, OpenGL set up etc
@@ -36,7 +40,7 @@ int main()
     contextSettings.minorVersion = 3;
     contextSettings.attributeFlags = sf::ContextSettings::Core;
     sf::Window window({1280, 720}, "Pong 3D", sf::Style::Close, contextSettings);
-    window.setFramerateLimit(60);
+    //window.setFramerateLimit(60);
 
     if (!gladLoadGL()) {
         std::cerr << "Failed to load OpenGL, exiting.\n";
@@ -119,7 +123,7 @@ int main()
         glCheck(glDisable(GL_DEPTH_TEST));
         glCheck(glActiveTexture(GL_TEXTURE0));
 
-        if (Settings::get().isBoom) {
+        if (Settings::get().useBloomShaders) {
             blurShader.use();
             // Blur the image horizontal
             blurFboHori.use();
@@ -163,7 +167,7 @@ int main()
         glCheck(glActiveTexture(GL_TEXTURE1));
         glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[0]));
 
-        loadUniform(bloomToggle, Settings::get().isBoom);
+        loadUniform(bloomToggle, Settings::get().useBloomShaders);
 
         screenRender.draw();
 

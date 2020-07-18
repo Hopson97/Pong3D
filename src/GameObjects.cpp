@@ -13,7 +13,7 @@ glm::mat4 Camera::getProjectionView() const
 void Paddle::update(float dt)
 {
     position += velocity * dt;
-    velocity *= 0.96f;
+    velocity *= 0.98f;
     roomCollide(*this, [](float& v) { v = 0; });
     aabb.update(*this);
 }
