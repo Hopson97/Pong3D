@@ -6,6 +6,7 @@
 #include "GameObjects.h"
 #include "Maths.h"
 #include <SFML/System/Clock.hpp>
+#include "GL/VertexArray.h"
 
 #include <list>
 
@@ -13,8 +14,9 @@ class ScreenInGame final : public Screen {
     struct Terrain {
         int index = 0;
         glm::vec3 location{0.0f};
-        BufferedMesh vao;
+        glpp::VertexArray vertexArray;
     };
+
   public:
     ScreenInGame(ScreenStack* stack);
     ~ScreenInGame();
@@ -40,9 +42,9 @@ class ScreenInGame final : public Screen {
     Paddle m_enemy;
     Ball m_ball;
 
-    BufferedMesh m_paddleObj;
-    BufferedMesh m_ballObj;
-    BufferedMesh m_roomObj;
+    glpp::VertexArray m_paddleVao;
+    glpp::VertexArray m_ballVao;
+    glpp::VertexArray m_roomVao;
 
     Shader m_shader;
     GLuint m_modelMatLoc = 0;

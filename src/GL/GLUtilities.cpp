@@ -111,41 +111,6 @@ Framebuffer makeFramebuffer(int width, int height)
     return framebuffer;
 }
 
-BufferedMesh bufferMesh(const Mesh& mesh)
-{
-    BufferedMesh bufferedMesh;
-    glCheck(glGenVertexArrays(1, &bufferedMesh.vao));
-    glCheck(glBindVertexArray(bufferedMesh.vao));
-
-    bufferedMesh.addBuffer(mesh.positions, 3);
-    bufferedMesh.addBuffer(mesh.normals, 3);
-
-    // Index buffer
-    GLuint elementVbo;
-    glCheck(glGenBuffers(1, &elementVbo));
-    glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementVbo));
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                         mesh.indices.size() * sizeof(mesh.indices[0]),
-                         mesh.indices.data(), GL_STATIC_DRAW));
-    bufferedMesh.vbos.push_back(elementVbo);
-    bufferedMesh.indicesCount = mesh.indices.size();
-
-    return bufferedMesh;
-}
-
-BufferedMesh bufferScreenMesh(const Mesh& mesh)
-{
-    BufferedMesh bufferedMesh;
-    glCheck(glGenVertexArrays(1, &bufferedMesh.vao));
-    glCheck(glBindVertexArray(bufferedMesh.vao));
-
-    bufferedMesh.addBuffer(mesh.positions, 2);
-    bufferedMesh.addBuffer(mesh.textureCoords, 2);
-    bufferedMesh.addIndexBuffer(mesh.indices);
-
-    return bufferedMesh;
-}
-
 Shader loadShaderProgram(const std::string& vShaderName, const std::string& fShaderName)
 {
     Shader shader;
@@ -176,44 +141,6 @@ void loadUniform(GLuint location, const glm::mat4& matrix)
 void loadUniform(GLuint location, const glm::vec3& vector)
 {
     glCheck(glUniform3fv(location, 1, glm::value_ptr(vector)));
-}
-
-void BufferedMesh::draw() const
-{
-    glCheck(glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, nullptr));
-}
-
-void BufferedMesh::addBuffer(const std::vector<GLfloat>& data, int dims)
-{
-    GLuint vbo;
-    glCheck(glGenBuffers(1, &vbo));
-    glCheck(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-    glCheck(glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(data[0]), data.data(),
-                         GL_STATIC_DRAW));
-    glCheck(glVertexAttribPointer(vbos.size(), dims, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0));
-    glCheck(glEnableVertexAttribArray(vbos.size()));
-    vbos.push_back(vbo);
-}
-
-void BufferedMesh::addIndexBuffer(const std::vector<GLuint>& data)
-{
-    GLuint elementVbo;
-    glCheck(glGenBuffers(1, &elementVbo));
-    glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementVbo));
-    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(data[0]),
-                         data.data(), GL_STATIC_DRAW));
-    vbos.push_back(elementVbo);
-    indicesCount = data.size();
-}
-
-void BufferedMesh::destroy()
-{
-    if (vao) {
-        glDeleteVertexArrays(1, &vao);
-        glDeleteBuffers(vbos.size(), vbos.data());
-        vao = 0;
-        vbos.clear();
-    }
 }
 
 GLuint Shader::getUniformLocation(const char* name)

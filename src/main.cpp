@@ -40,7 +40,7 @@ int main()
     contextSettings.minorVersion = 3;
     contextSettings.attributeFlags = sf::ContextSettings::Core;
     sf::Window window({1280, 720}, "Pong 3D", sf::Style::Close, contextSettings);
-    //window.setFramerateLimit(60);
+    window.setFramerateLimit(60);
 
     if (!gladLoadGL()) {
         std::cerr << "Failed to load OpenGL, exiting.\n";
@@ -90,7 +90,15 @@ int main()
     loadUniform(screenShader.getUniformLocation("colourTexture"), 1);
     auto bloomToggle = screenShader.getUniformLocation("bloomToggle");
 
-    auto screenRender = bufferScreenMesh(createScreenMesh());
+    auto screenMesh = createScreenMesh();
+    glpp::VertexArray screenVertexArray;
+    screenVertexArray.bind();
+    screenVertexArray.addAttribute(screenMesh.positions, 2);
+    screenVertexArray.addAttribute(screenMesh.textureCoords, 2);
+    screenVertexArray.addElements(screenMesh.indices);
+    glpp::Drawable screenDrawable = screenVertexArray.getDrawable();
+
+    
 
     // Main loop
     sf::Clock deltaTimer;
@@ -104,8 +112,7 @@ int main()
         ImGui_SFML_OpenGL3::startFrame();
 
         if (Settings::get().showFps) {
-
-            renderFpsMenu(window.getSize().x);
+            renderFpsMenu((float)window.getSize().x);
         }
 
         Screen& screen = screens.peekScreen();
@@ -119,7 +126,7 @@ int main()
         screen.onRender();
 
         // Begin Post Processing
-        glCheck(glBindVertexArray(screenRender.vao));
+        screenDrawable.bind();
         glCheck(glDisable(GL_DEPTH_TEST));
         glCheck(glActiveTexture(GL_TEXTURE0));
 
@@ -130,14 +137,14 @@ int main()
             glCheck(glClear(GL_COLOR_BUFFER_BIT));
             glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[1]));
             loadUniform(blurLocation, 1);
-            screenRender.draw();
+            screenDrawable.draw();
 
             // Blur the image vertical
             blurFboVert.use();
             glCheck(glClear(GL_COLOR_BUFFER_BIT));
             glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0]));
             loadUniform(blurLocation, 0);
-            screenRender.draw();
+            screenDrawable.draw();
 
             // Keep on blurring
             for (int i = 0; i < 10; i++) {
@@ -145,13 +152,13 @@ int main()
                 glCheck(glClear(GL_COLOR_BUFFER_BIT));
                 glCheck(glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0]));
                 loadUniform(blurLocation, 1);
-                screenRender.draw();
+                screenDrawable.draw();
 
                 blurFboVert.use();
                 glCheck(glClear(GL_COLOR_BUFFER_BIT));
                 glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0]));
                 loadUniform(blurLocation, 0);
-                screenRender.draw();
+                screenDrawable.draw();
             }
         }
 
@@ -169,7 +176,7 @@ int main()
 
         loadUniform(bloomToggle, Settings::get().useBloomShaders);
 
-        screenRender.draw();
+        screenDrawable.draw();
 
         // Display
         ImGui_SFML_OpenGL3::endFrame();
@@ -183,7 +190,6 @@ int main()
     blurFboVert.destroy();
 
     blurShader.destroy();
-    screenRender.destroy();
     screenShader.destroy();
     return 0;
 }

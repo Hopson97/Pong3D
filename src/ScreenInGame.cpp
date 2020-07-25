@@ -18,16 +18,29 @@ ScreenInGame::ScreenInGame(ScreenStack* stack)
 
     Terrain firstTerrain;
     firstTerrain.location = {(-TERRAIN_WIDTH * TILE_SIZE) / 2, -6, 0};
-    firstTerrain.vao = bufferMesh(terrain);
-    m_terrains.push_back(firstTerrain);
-
+    firstTerrain.vertexArray.bind();
+    firstTerrain.vertexArray.addAttribute(terrain.positions, 3);
+    firstTerrain.vertexArray.addAttribute(terrain.normals, 3);
+    firstTerrain.vertexArray.addElements(terrain.indices);
+    m_terrains.push_back(std::move(firstTerrain));
     for (int i = 0; i < 2; i++) {
         addTerrain();
     }
 
-    m_roomObj = bufferMesh(roomMesh);
-    m_ballObj = bufferMesh(ballMesh);
-    m_paddleObj = bufferMesh(paddle);
+    m_roomVao.bind();
+    m_roomVao.addAttribute(roomMesh.positions, 3);
+    m_roomVao.addAttribute(roomMesh.normals, 3);
+    m_roomVao.addElements(roomMesh.indices);
+
+    m_ballVao.bind();
+    m_ballVao.addAttribute(ballMesh.positions, 3);
+    m_ballVao.addAttribute(ballMesh.normals, 3);
+    m_ballVao.addElements(ballMesh.indices);
+
+    m_paddleVao.bind();
+    m_paddleVao.addAttribute(paddle.positions, 3);
+    m_paddleVao.addAttribute(paddle.normals, 3);
+    m_paddleVao.addElements(paddle.indices);
 
     resetGame();
 
@@ -45,14 +58,7 @@ ScreenInGame::ScreenInGame(ScreenStack* stack)
 
 ScreenInGame::~ScreenInGame()
 {
-    m_ballObj.destroy();
     m_shader.destroy();
-    m_paddleObj.destroy();
-    m_roomObj.destroy();
-
-    for (auto& terrain : m_terrains) {
-        terrain.vao.destroy();
-    }
 
     glCheck(glUseProgram(0));
     glCheck(glBindVertexArray(0));
@@ -151,7 +157,6 @@ void ScreenInGame::onUpdate(float dt)
                 loc.z -= 45.0f * dt;
             }
             if (loc.z < -TERRAIN_LENGTH - 10.0f) {
-                itr->vao.destroy();
                 itr = m_terrains.erase(itr);
                 addTerrain();
             }
@@ -182,44 +187,48 @@ void ScreenInGame::onRender()
 
     // Render room
     loadUniform(m_colourLoc, {0.0, 0.65, 0.7});
-    glCheck(glBindVertexArray(m_roomObj.vao));
+    auto roomDraw = m_roomVao.getDrawable();
+    roomDraw.bind();
 
     auto modelmatrix = createModelMatrix({0, 0, 0}, {0, 0, 0});
     loadUniform(m_modelMatLoc, modelmatrix);
-    m_roomObj.draw();
-
+    roomDraw.draw();
+    
     // Render paddles
-    glCheck(glBindVertexArray(m_paddleObj.vao));
+    auto paddleDraw = m_paddleVao.getDrawable();
+    paddleDraw.bind();
 
     modelmatrix = createModelMatrix(m_enemy.position, {0, 0, 0});
     loadUniform(m_modelMatLoc, modelmatrix);
-    m_paddleObj.draw();
+    paddleDraw.draw();
 
     modelmatrix = createModelMatrix(m_player.position, {0, 0, 0});
     loadUniform(m_modelMatLoc, modelmatrix);
-    m_paddleObj.draw();
+    paddleDraw.draw();
 
     // Render balls
-    glCheck(glBindVertexArray(m_ballObj.vao));
+    auto ballDraw = m_ballVao.getDrawable();
+    ballDraw.bind();
 
     modelmatrix = createModelMatrix(m_ball.position, m_ball.rotation);
     loadUniform(m_modelMatLoc, modelmatrix);
-    m_ballObj.draw();
-
+    ballDraw.draw();
+    
     // Render terrain
     if (Settings::get().renderTerrain) {
         for (const auto& terrain : m_terrains) {
-            glCheck(glBindVertexArray(terrain.vao.vao));
+            glpp::Drawable terrainDrawable = terrain.vertexArray.getDrawable();
+            terrainDrawable.bind();
             modelmatrix = createModelMatrix(terrain.location, {0, 0, 0});
             loadUniform(m_modelMatLoc, modelmatrix);
 
             loadUniform(m_colourLoc, {1.25, 0.0, 1.25});
             glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
-            terrain.vao.draw();
+            terrainDrawable.draw();
 
             loadUniform(m_colourLoc, {0.0, 0.0, 0.0});
             glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
-            terrain.vao.draw();
+            terrainDrawable.draw();
         }
     }
 
@@ -276,7 +285,10 @@ void ScreenInGame::addTerrain()
 
     auto mesh =
         createTerrainMesh(terrain.index, {TERRAIN_WIDTH, TERRAIN_HEIGHT}, TILE_SIZE);
-    terrain.vao = bufferMesh(mesh);
+    terrain.vertexArray.bind();
+    terrain.vertexArray.addAttribute(mesh.positions, 3);
+    terrain.vertexArray.addAttribute(mesh.normals, 3);
+    terrain.vertexArray.addElements(mesh.indices);
 
-    m_terrains.push_back(terrain);
+    m_terrains.push_back(std::move(terrain));
 }
