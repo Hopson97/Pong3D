@@ -44,22 +44,22 @@ ScreenInGame::ScreenInGame(ScreenStack* stack)
 
     resetGame();
 
-    m_shader = loadShaderProgram("minimal", "minimal");
-    m_shader.use();
+    m_shader.addShader("minimal_vertex", glpp::ShaderType::Vertex);
+    m_shader.addShader("minimal_fragment", glpp::ShaderType::Fragment);
+    m_shader.linkShaders();
+    m_shader.bind();
 
-    m_modelMatLoc = m_shader.getUniformLocation("modelMatrix");
-    m_pvMatLoc = m_shader.getUniformLocation("projectionViewMatrix");
-    m_lightLoc = m_shader.getUniformLocation("lightPosition");
-    m_colourLoc = m_shader.getUniformLocation("colour");
+    m_locModelMat = m_shader.getUniformLocation("modelMatrix");
+    m_locPvMat = m_shader.getUniformLocation("projectionViewMatrix");
+    m_locLightPos = m_shader.getUniformLocation("lightPosition");
+    m_locColour = m_shader.getUniformLocation("colour");
 
     // Update lighting
-    loadUniform(m_lightLoc, {ROOM_SIZE / 2.0f, ROOM_SIZE, -100});
+    glpp::loadUniform(m_locLightPos, {ROOM_SIZE / 2.0f, ROOM_SIZE, -100});
 }
 
 ScreenInGame::~ScreenInGame()
 {
-    m_shader.destroy();
-
     glCheck(glUseProgram(0));
     glCheck(glBindVertexArray(0));
 }
@@ -181,17 +181,17 @@ void ScreenInGame::onRender()
     ImGui::End();
 
     // Load up projection matrix stuff
-    m_shader.use();
     auto projectionView = m_camera.getProjectionView();
-    loadUniform(m_pvMatLoc, projectionView);
+    m_shader.bind();
+    glpp::loadUniform(m_locPvMat, projectionView);
 
     // Render room
-    loadUniform(m_colourLoc, {0.0, 0.65, 0.7});
+    glpp::loadUniform(m_locColour, {0.0, 0.65, 0.7});
     auto roomDraw = m_roomVao.getDrawable();
     roomDraw.bind();
 
     auto modelmatrix = createModelMatrix({0, 0, 0}, {0, 0, 0});
-    loadUniform(m_modelMatLoc, modelmatrix);
+    glpp::loadUniform(m_locModelMat, modelmatrix);
     roomDraw.draw();
     
     // Render paddles
@@ -199,11 +199,11 @@ void ScreenInGame::onRender()
     paddleDraw.bind();
 
     modelmatrix = createModelMatrix(m_enemy.position, {0, 0, 0});
-    loadUniform(m_modelMatLoc, modelmatrix);
+    glpp::loadUniform(m_locModelMat, modelmatrix);
     paddleDraw.draw();
 
     modelmatrix = createModelMatrix(m_player.position, {0, 0, 0});
-    loadUniform(m_modelMatLoc, modelmatrix);
+    glpp::loadUniform(m_locModelMat, modelmatrix);
     paddleDraw.draw();
 
     // Render balls
@@ -211,7 +211,7 @@ void ScreenInGame::onRender()
     ballDraw.bind();
 
     modelmatrix = createModelMatrix(m_ball.position, m_ball.rotation);
-    loadUniform(m_modelMatLoc, modelmatrix);
+    glpp::loadUniform(m_locModelMat, modelmatrix);
     ballDraw.draw();
     
     // Render terrain
@@ -220,13 +220,13 @@ void ScreenInGame::onRender()
             glpp::Drawable terrainDrawable = terrain.vertexArray.getDrawable();
             terrainDrawable.bind();
             modelmatrix = createModelMatrix(terrain.location, {0, 0, 0});
-            loadUniform(m_modelMatLoc, modelmatrix);
+            glpp::loadUniform(m_locModelMat, modelmatrix);
 
-            loadUniform(m_colourLoc, {1.25, 0.0, 1.25});
+            glpp::loadUniform(m_locColour, {1.25, 0.0, 1.25});
             glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
             terrainDrawable.draw();
 
-            loadUniform(m_colourLoc, {0.0, 0.0, 0.0});
+            glpp::loadUniform(m_locColour, {0.0, 0.0, 0.0});
             glCheck(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
             terrainDrawable.draw();
         }

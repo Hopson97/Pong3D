@@ -8,65 +8,6 @@
 #include <iostream>
 #include <sstream>
 
-namespace {
-    // For loading shaders
-    GLuint compileShader(const std::string_view source, GLenum shaderType)
-    {
-        auto shaderID = glCheck(glCreateShader(shaderType));
-
-        const GLchar* const shaderSourcePtr = source.data();
-        const GLint shaderSourceLength = source.length();
-        glCheck(glShaderSource(shaderID, 1, &shaderSourcePtr, &shaderSourceLength));
-        glCheck(glCompileShader(shaderID));
-
-        GLint logLength;
-
-        glCheck(glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logLength));
-        if (logLength) {
-            std::string infoLog(logLength, 0);
-            glCheck(glGetShaderInfoLog(shaderID, logLength, nullptr, infoLog.data()));
-
-            throw std::runtime_error(infoLog);
-        }
-
-        return shaderID;
-    }
-
-    // For loading shaders
-    GLuint linkProgram(GLuint vertexShaderID, GLuint fragmentShaderID)
-    {
-        auto id = glCheck(glCreateProgram());
-
-        glCheck(glAttachShader(id, vertexShaderID));
-        glCheck(glAttachShader(id, fragmentShaderID));
-
-        glCheck(glLinkProgram(id));
-
-        glCheck(glDetachShader(id, fragmentShaderID));
-        glCheck(glDetachShader(id, vertexShaderID));
-
-        GLint logLength;
-
-        glCheck(glGetProgramiv(id, GL_INFO_LOG_LENGTH, &logLength));
-        if (logLength) {
-            std::string infoLog(logLength, 0);
-            glCheck(glGetProgramInfoLog(id, logLength, nullptr, infoLog.data()));
-            throw std::runtime_error(infoLog);
-        }
-
-        return id;
-    }
-
-    // Says it on the tin
-    std::string loadFile(const std::string fName)
-    {
-        std::ifstream inFile(fName);
-        std::ostringstream stream;
-        stream << inFile.rdbuf();
-        return stream.str();
-    }
-} // namespace
-
 Framebuffer makeFramebuffer(int width, int height)
 {
     Framebuffer framebuffer;
@@ -110,47 +51,6 @@ Framebuffer makeFramebuffer(int width, int height)
 
     return framebuffer;
 }
-
-Shader loadShaderProgram(const std::string& vShaderName, const std::string& fShaderName)
-{
-    Shader shader;
-    std::string vertexSource = loadFile("data/" + vShaderName + "_vertex.glsl");
-    std::string fragmentSource = loadFile("data/" + fShaderName + "_fragment.glsl");
-
-    auto vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
-    auto fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
-    shader.program = linkProgram(vertexShader, fragmentShader);
-    return shader;
-}
-
-void uniformMatrix4(GLuint location, glm::mat4& matrix)
-{
-    glCheck(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix)));
-}
-
-void loadUniform(GLuint location, int value) 
-{
-    glCheck(glUniform1i(location, value));
-}
-
-void loadUniform(GLuint location, const glm::mat4& matrix)
-{
-    glCheck(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix)));
-}
-
-void loadUniform(GLuint location, const glm::vec3& vector)
-{
-    glCheck(glUniform3fv(location, 1, glm::value_ptr(vector)));
-}
-
-GLuint Shader::getUniformLocation(const char* name)
-{
-    return glCheck(glGetUniformLocation(program, name));
-}
-
-void Shader::use() { glCheck(glUseProgram(program)); }
-
-void Shader::destroy() { glCheck(glDeleteProgram(program)); }
 
 void Framebuffer::use()
 {

@@ -7,6 +7,7 @@
 #include "Maths.h"
 #include <SFML/System/Clock.hpp>
 #include "GL/VertexArray.h"
+#include "GL/Shader.h"
 
 #include <list>
 
@@ -46,11 +47,11 @@ class ScreenInGame final : public Screen {
     glpp::VertexArray m_ballVao;
     glpp::VertexArray m_roomVao;
 
-    Shader m_shader;
-    GLuint m_modelMatLoc = 0;
-    GLuint m_pvMatLoc = 0;
-    GLuint m_lightLoc = 0;
-    GLuint m_colourLoc = 0;
+    glpp::Shader m_shader;
+    glpp::UniformLocation m_locModelMat;
+    glpp::UniformLocation m_locPvMat;
+    glpp::UniformLocation m_locLightPos;
+    glpp::UniformLocation m_locColour;
 
     int m_playerScore = 0;
     int m_enemyScore = 0;

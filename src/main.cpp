@@ -80,15 +80,22 @@ int main()
     auto blurFboVert =
         makeFramebuffer(window.getSize().x / blurRes, window.getSize().y / blurRes);
 
-    auto blurShader = loadShaderProgram("screen", "blur");
-    GLuint blurLocation = blurShader.getUniformLocation("horizontalBlur");
+    glpp::Shader blurShader;
+    blurShader.addShader("screen_vertex", glpp::ShaderType::Vertex);
+    blurShader.addShader("blur_fragment", glpp::ShaderType::Fragment);
+    blurShader.linkShaders();
+    blurShader.bind();
+    glpp::UniformLocation blurLocation = blurShader.getUniformLocation("horizontalBlur");
 
     // Final pass
-    auto screenShader = loadShaderProgram("screen", "screen");
-    screenShader.use();
-    loadUniform(screenShader.getUniformLocation("bloomTexture"), 0);
-    loadUniform(screenShader.getUniformLocation("colourTexture"), 1);
-    auto bloomToggle = screenShader.getUniformLocation("bloomToggle");
+    glpp::Shader finalPassShader;
+    finalPassShader.addShader("screen_vertex", glpp::ShaderType::Vertex);
+    finalPassShader.addShader("screen_fragment", glpp::ShaderType::Fragment);
+    finalPassShader.linkShaders();
+    finalPassShader.bind();
+    glpp::loadUniform(finalPassShader.getUniformLocation("bloomTexture"), 0);
+    glpp::loadUniform(finalPassShader.getUniformLocation("colourTexture"), 1);
+    glpp::UniformLocation bloomToggle = finalPassShader.getUniformLocation("bloomToggle");
 
     auto screenMesh = createScreenMesh();
     glpp::VertexArray screenVertexArray;
@@ -97,8 +104,6 @@ int main()
     screenVertexArray.addAttribute(screenMesh.textureCoords, 2);
     screenVertexArray.addElements(screenMesh.indices);
     glpp::Drawable screenDrawable = screenVertexArray.getDrawable();
-
-    
 
     // Main loop
     sf::Clock deltaTimer;
@@ -131,7 +136,7 @@ int main()
         glCheck(glActiveTexture(GL_TEXTURE0));
 
         if (Settings::get().useBloomShaders) {
-            blurShader.use();
+            blurShader.bind();
             // Blur the image horizontal
             blurFboHori.use();
             glCheck(glClear(GL_COLOR_BUFFER_BIT));
@@ -163,7 +168,7 @@ int main()
         }
 
         // Render to the window
-        screenShader.use();
+        finalPassShader.bind();
         glCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
         glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
         glCheck(glClear(GL_COLOR_BUFFER_BIT));
@@ -189,7 +194,5 @@ int main()
     blurFboHori.destroy();
     blurFboVert.destroy();
 
-    blurShader.destroy();
-    screenShader.destroy();
     return 0;
 }
