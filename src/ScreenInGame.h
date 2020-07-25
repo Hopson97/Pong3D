@@ -1,13 +1,11 @@
 #pragma once
 
-#include "Screen.h"
-
-#include "GL/GLUtilities.h"
+#include "GL/Shader.h"
+#include "GL/VertexArray.h"
 #include "GameObjects.h"
 #include "Maths.h"
+#include "Screen.h"
 #include <SFML/System/Clock.hpp>
-#include "GL/VertexArray.h"
-#include "GL/Shader.h"
 
 #include <list>
 

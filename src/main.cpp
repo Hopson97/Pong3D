@@ -1,18 +1,18 @@
+#include "GL/Framebuffer.h"
 #include "GL/GLDebug.h"
-#include "GL/GLUtilities.h"
 #include "Mesh.h"
 #include "Screen.h"
 #include "ScreenInGame.h"
 #include "ScreenMainMenu.h"
 #include "Settings.h"
+#include <SFML/GpuPreference.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Window.hpp>
 #include <imgui/imgui.h>
 #include <imgui_impl/imgui_wrapper.h>
 #include <iostream>
-#include <SFML/GpuPreference.hpp>
 
-SFML_DEFINE_DISCRETE_GPU_PREFERENCE 
+SFML_DEFINE_DISCRETE_GPU_PREFERENCE
 
 void renderFpsMenu(float windowWidth)
 {
@@ -70,14 +70,26 @@ int main()
     screens.update();
 
     // Framebuffer stuff
-    auto framebuffer = makeFramebuffer(window.getSize().x, window.getSize().y);
+    glpp::Framebuffer framebuffer(window.getSize().x, window.getSize().y);
+    framebuffer.bind();
+    framebuffer.attachTexture();
+    framebuffer.attachTexture();
+    framebuffer.finalise();
 
     // Blur render pass stuff
     int blurRes = 4;
-    auto blurFboHori =
-        makeFramebuffer(window.getSize().x / blurRes, window.getSize().y / blurRes);
-    auto blurFboVert =
-        makeFramebuffer(window.getSize().x / blurRes, window.getSize().y / blurRes);
+    GLuint width = window.getSize().x / blurRes;
+    GLuint height = window.getSize().y / blurRes;
+
+    glpp::Framebuffer blurHorizontalFbo(width, height);
+    blurHorizontalFbo.bind();
+    blurHorizontalFbo.attachTexture();
+    blurHorizontalFbo.finalise();
+
+    glpp::Framebuffer blurVerticalFbo(width, height);
+    blurVerticalFbo.bind();
+    blurVerticalFbo.attachTexture();
+    blurVerticalFbo.finalise();
 
     glpp::Shader blurShader;
     blurShader.addShader("screen_vertex", glpp::ShaderType::Vertex);
@@ -96,6 +108,7 @@ int main()
     glpp::loadUniform(finalPassShader.getUniformLocation("colourTexture"), 1);
     glpp::UniformLocation bloomToggle = finalPassShader.getUniformLocation("bloomToggle");
 
+    // Final pass render target
     auto screenMesh = createScreenMesh();
     glpp::VertexArray screenVertexArray;
     screenVertexArray.bind();
@@ -125,7 +138,7 @@ int main()
 
         // Render the scene to a framebuffer
         glCheck(glEnable(GL_DEPTH_TEST));
-        framebuffer.use();
+        framebuffer.bind();
         glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
         screen.onRender();
 
@@ -137,32 +150,31 @@ int main()
         if (Settings::get().useBloomShaders) {
             blurShader.bind();
             // Blur the image horizontal
-            blurFboHori.use();
+            blurHorizontalFbo.bind();
             glCheck(glClear(GL_COLOR_BUFFER_BIT));
-            glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[1].textureId()));
+            framebuffer.bindTexture(1);
             loadUniform(blurLocation, 1);
             screenDrawable.draw();
 
             // Blur the image vertical
-            blurFboVert.use();
+            blurVerticalFbo.bind();
             glCheck(glClear(GL_COLOR_BUFFER_BIT));
-            glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0].textureId()));
+            blurHorizontalFbo.bindTexture(0);
             loadUniform(blurLocation, 0);
             screenDrawable.draw();
 
             // Keep on blurring
             for (int i = 0; i < 10; i++) {
-                blurFboHori.use();
+                blurHorizontalFbo.bind();
                 glCheck(glClear(GL_COLOR_BUFFER_BIT));
-                glCheck(
-                    glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0].textureId()));
+                blurVerticalFbo.bindTexture(0);
+
                 loadUniform(blurLocation, 1);
                 screenDrawable.draw();
 
-                blurFboVert.use();
+                blurVerticalFbo.bind();
                 glCheck(glClear(GL_COLOR_BUFFER_BIT));
-                glCheck(
-                    glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0].textureId()));
+                blurHorizontalFbo.bindTexture(0);
                 loadUniform(blurLocation, 0);
                 screenDrawable.draw();
             }
@@ -175,10 +187,10 @@ int main()
         glCheck(glClear(GL_COLOR_BUFFER_BIT));
 
         glCheck(glActiveTexture(GL_TEXTURE0));
-        glCheck(glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0].textureId()));
+        blurVerticalFbo.bindTexture(0);
 
         glCheck(glActiveTexture(GL_TEXTURE1));
-        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[0].textureId()));
+        framebuffer.bindTexture(0);
 
         loadUniform(bloomToggle, Settings::get().useBloomShaders);
 
@@ -190,10 +202,6 @@ int main()
         screens.update();
     }
     ImGui_SFML_OpenGL3::shutdown();
-
-    framebuffer.destroy();
-    blurFboHori.destroy();
-    blurFboVert.destroy();
 
     return 0;
 }
