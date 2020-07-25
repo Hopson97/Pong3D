@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <string>
 #include <vector>
+#include "Texture.h"
 
 struct Mesh;
 
@@ -14,7 +15,7 @@ struct Framebuffer {
 
     GLuint fbo = 0;
     GLuint rbo = 0;
-    GLuint textures[2] = {0, 0};
+    glpp::Texture2d textures[2];
 
     void use();
     void destroy();

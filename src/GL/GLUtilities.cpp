@@ -19,20 +19,11 @@ Framebuffer makeFramebuffer(int width, int height)
     framebuffer.use();
 
     // Create texture
-    glCheck(glGenTextures(2, framebuffer.textures));
-
     for (int i = 0; i < 2; i++) {
-        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[i]));
-        glCheck(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-                             GL_UNSIGNED_BYTE, nullptr));
-        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        // Attatch the colours
+        framebuffer.textures[i].create(width, height);
         glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
-                                       GL_TEXTURE_2D, framebuffer.textures[i], 0));
+                                       GL_TEXTURE_2D, framebuffer.textures[i].textureId(),
+                                       0));
     }
 
     // Create renderbuffer
@@ -62,5 +53,4 @@ void Framebuffer::destroy()
 {
     glCheck(glDeleteFramebuffers(1, &fbo));
     glCheck(glDeleteRenderbuffers(1, &rbo));
-    glCheck(glDeleteTextures(2, textures));
 }

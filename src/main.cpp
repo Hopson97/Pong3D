@@ -12,6 +12,7 @@
 #include <iostream>
 #include <SFML/GpuPreference.hpp>
 
+SFML_DEFINE_DISCRETE_GPU_PREFERENCE 
 
 void renderFpsMenu(float windowWidth)
 {
@@ -26,8 +27,6 @@ void renderFpsMenu(float windowWidth)
     }
     ImGui::End();
 }
-
-SFML_DEFINE_DISCRETE_GPU_PREFERENCE 
 
 int main()
 {
@@ -140,14 +139,14 @@ int main()
             // Blur the image horizontal
             blurFboHori.use();
             glCheck(glClear(GL_COLOR_BUFFER_BIT));
-            glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[1]));
+            glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[1].textureId()));
             loadUniform(blurLocation, 1);
             screenDrawable.draw();
 
             // Blur the image vertical
             blurFboVert.use();
             glCheck(glClear(GL_COLOR_BUFFER_BIT));
-            glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0]));
+            glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0].textureId()));
             loadUniform(blurLocation, 0);
             screenDrawable.draw();
 
@@ -155,13 +154,15 @@ int main()
             for (int i = 0; i < 10; i++) {
                 blurFboHori.use();
                 glCheck(glClear(GL_COLOR_BUFFER_BIT));
-                glCheck(glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0]));
+                glCheck(
+                    glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0].textureId()));
                 loadUniform(blurLocation, 1);
                 screenDrawable.draw();
 
                 blurFboVert.use();
                 glCheck(glClear(GL_COLOR_BUFFER_BIT));
-                glCheck(glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0]));
+                glCheck(
+                    glBindTexture(GL_TEXTURE_2D, blurFboHori.textures[0].textureId()));
                 loadUniform(blurLocation, 0);
                 screenDrawable.draw();
             }
@@ -174,10 +175,10 @@ int main()
         glCheck(glClear(GL_COLOR_BUFFER_BIT));
 
         glCheck(glActiveTexture(GL_TEXTURE0));
-        glCheck(glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0]));
+        glCheck(glBindTexture(GL_TEXTURE_2D, blurFboVert.textures[0].textureId()));
 
         glCheck(glActiveTexture(GL_TEXTURE1));
-        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[0]));
+        glCheck(glBindTexture(GL_TEXTURE_2D, framebuffer.textures[0].textureId()));
 
         loadUniform(bloomToggle, Settings::get().useBloomShaders);
 

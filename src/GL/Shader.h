@@ -22,6 +22,10 @@ namespace glpp {
         Shader(Shader&& other) noexcept;
         ~Shader();
 
+        Shader& operator=(Shader& other) = delete;
+        Shader(Shader& other) = delete;
+
+
         void bind();
         void addShader(const std::string& filename, ShaderType type);
         void linkShaders();
