@@ -51,10 +51,7 @@ int main()
     glCheck(glEnable(GL_DEPTH_TEST));
     glCheck(glCullFace(GL_BACK));
     glCheck(glEnable(GL_CULL_FACE));
-    glCheck(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     glCheck(glLineWidth(2.0f));
-
-    glEnable(GL_MULTISAMPLE);
 
     // ImGUI
     ImGui_SFML_OpenGL3::init(window);
@@ -182,8 +179,7 @@ int main()
 
         // Render to the window
         finalPassShader.bind();
-        glCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-        glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
+        glpp::Framebuffer::unbind(window.getSize().x, window.getSize().y);
         glCheck(glClear(GL_COLOR_BUFFER_BIT));
 
         glCheck(glActiveTexture(GL_TEXTURE0));
