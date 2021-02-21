@@ -100,7 +100,6 @@ Mesh createCubeMesh(const glm::vec3& dimensions)
 Mesh createWireCubeMesh(const glm::vec3& dimensions, float wireThickness)
 {
     Mesh cube;
-    float wireSize = 0.1f;
     float w = dimensions.x;
     float h = dimensions.y;
     float d = dimensions.z;

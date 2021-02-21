@@ -28,4 +28,4 @@ namespace glpp {
         GLuint m_renderbuffer = 0;
         GLuint m_framebuffer = 0;
     };
-}; // namespace glpp
+} // namespace glpp

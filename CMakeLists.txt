@@ -8,12 +8,19 @@ set(SOURCES
     src/main.cpp
     src/Maths.cpp
     src/Mesh.cpp
-    src/GL/GLDebug.cpp 
-    src/GL/GLUtilities.cpp
+    src/Settings.cpp
     src/GameObjects.cpp
     src/Screen.cpp
     src/ScreenMainMenu.cpp
     src/ScreenInGame.cpp
+    
+    src/GL/GLDebug.cpp 
+    src/GL/Framebuffer.cpp 
+    src/GL/Shader.cpp 
+    src/GL/Texture.cpp 
+    src/GL/VertexArray.cpp 
+
+
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

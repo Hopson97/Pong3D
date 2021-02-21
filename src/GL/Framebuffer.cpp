@@ -69,7 +69,7 @@ namespace glpp {
                                           GL_RENDERBUFFER, m_renderbuffer));
 
         std::vector<GLuint> attachments;
-        for (int i = 0; i < m_textureAttachments.size(); i++) {
+        for (unsigned i = 0; i < m_textureAttachments.size(); i++) {
             attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
         }
         glDrawBuffers(attachments.size(), attachments.data());
