@@ -3,7 +3,7 @@
 #include <fstream>
 #include <imgui/imgui.h>
 
-Settings::Settings() 
+Settings::Settings()
 {
     std::ifstream inFile("data/settings.txt");
     std::string val;
@@ -26,7 +26,7 @@ Settings::Settings()
     }
 }
 
-Settings::~Settings() 
+Settings::~Settings()
 {
     std::ofstream outFile("data/settings.txt");
     outFile << "show_fps" << ' ' << showFps << '\n';
@@ -45,7 +45,7 @@ void Settings::showSettingsMenu(std::function<void(void)> onBackPressed)
 
         ImGui::Separator();
         ImGui::Text("Video Settings");
-        ImGui::Checkbox("Bloom", &useBloomShaders);        
+        ImGui::Checkbox("Bloom", &useBloomShaders);
         ImGui::Checkbox("Render Terrain", &renderTerrain);
 
         ImGui::Separator();

@@ -63,8 +63,8 @@ namespace {
     }
 } // namespace
 
-Mesh createScreenMesh() 
-{ 
+Mesh createScreenMesh()
+{
     Mesh quad;
     // clang-format off
     quad.positions = {

@@ -1,6 +1,6 @@
 # Pong3D
 
-description here
+Pong except it is 3D.
 
 ## Building and Running
 

@@ -90,19 +90,19 @@ void ScreenInGame::onInput()
     if (m_ball.velocity.z > 0) {
         if (m_ball.position.x + Ball::WIDTH / 2 >
             m_enemy.position.x + Paddle::WIDTH / 2) {
-            m_enemy.velocity.x += SPEED / 4.0f;
+            m_enemy.velocity.x += SPEED;
         }
         else if (m_ball.position.x + Ball::WIDTH / 2 <
                  m_enemy.position.x + Paddle::WIDTH / 2) {
-            m_enemy.velocity.x += -SPEED / 4.0f;
+            m_enemy.velocity.x += -SPEED;
         }
         if (m_ball.position.y - Ball::HEIGHT / 2 >
             m_enemy.position.y + Paddle::HEIGHT / 2) {
-            m_enemy.velocity.y += SPEED / 4.0f;
+            m_enemy.velocity.y += SPEED;
         }
         else if (m_ball.position.y + Ball::HEIGHT / 2 <
                  m_enemy.position.y + Paddle::HEIGHT / 2) {
-            m_enemy.velocity.y += -SPEED / 4.0f;
+            m_enemy.velocity.y += -SPEED;
         }
     }
 }
@@ -137,7 +137,7 @@ void ScreenInGame::onUpdate(float dt)
         m_enemyScore++;
         m_ball.velocity.z = BALL_SPEED;
     }
-        // Update camera
+    // Update camera
     m_camera.position.x = m_player.position.x + Paddle::WIDTH / 2;
     m_camera.position.y = m_player.position.y + Paddle::HEIGHT / 2;
     m_camera.position.z = m_player.position.z - 4.0f;
@@ -150,8 +150,8 @@ void ScreenInGame::onUpdate(float dt)
 
             auto& loc = itr->location;
             if (Settings::get().swayTerrain) {
-                loc.x +=
-                    std::sin(m_terrainSnakeTimer.getElapsedTime().asSeconds()) * 30.0f * dt;
+                loc.x += std::sin(m_terrainSnakeTimer.getElapsedTime().asSeconds()) *
+                         30.0f * dt;
             }
             if (Settings::get().moveTerrain) {
                 loc.z -= 45.0f * dt;
@@ -193,7 +193,7 @@ void ScreenInGame::onRender()
     auto modelmatrix = createModelMatrix({0, 0, 0}, {0, 0, 0});
     glpp::loadUniform(m_locModelMat, modelmatrix);
     roomDraw.draw();
-    
+
     // Render paddles
     auto paddleDraw = m_paddleVao.getDrawable();
     paddleDraw.bind();
@@ -213,7 +213,7 @@ void ScreenInGame::onRender()
     modelmatrix = createModelMatrix(m_ball.position, m_ball.rotation);
     glpp::loadUniform(m_locModelMat, modelmatrix);
     ballDraw.draw();
-    
+
     // Render terrain
     if (Settings::get().renderTerrain) {
         for (const auto& terrain : m_terrains) {

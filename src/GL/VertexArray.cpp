@@ -67,12 +67,13 @@ namespace glpp {
         m_vertexBuffers.push_back(vbo);
     }
 
-    //void VertexArray::addAttribute(const std::vector<GLuint>& data, int nPerVertex)
+    // void VertexArray::addAttribute(const std::vector<GLuint>& data, int nPerVertex)
     //{
     //    GLuint vbo;
     //    glCheck(glGenBuffers(1, &vbo));
     //    glCheck(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-    //    glCheck(glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(data[0]), data.data(),
+    //    glCheck(glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(data[0]),
+    //    data.data(),
     //                         GL_STATIC_DRAW));
     //    glCheck(glVertexAttribIPointer(m_vertexBuffers.size(), nPerVertex,
     //                                   GL_UNSIGNED_INT, 0, (GLvoid*)0));
@@ -85,8 +86,7 @@ namespace glpp {
         GLuint elementVbo;
         glCheck(glGenBuffers(1, &elementVbo));
         glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementVbo));
-        glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                             indices.size() * sizeof(indices[0]),
+        glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(indices[0]),
                              indices.data(), GL_STATIC_DRAW));
         m_vertexBuffers.push_back(elementVbo);
         m_indicesCount = indices.size();

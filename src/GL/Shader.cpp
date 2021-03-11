@@ -1,10 +1,10 @@
 #include "Shader.h"
 
 #include "GLDebug.h"
-#include <fstream>
-#include <sstream>
 #include <cassert>
+#include <fstream>
 #include <glm/gtc/type_ptr.hpp>
+#include <sstream>
 
 namespace {
     std::string loadFile(const std::string fName)

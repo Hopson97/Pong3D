@@ -22,7 +22,7 @@ struct Settings {
     // Misc
     bool swayTerrain = true;
     bool moveTerrain = true;
-    
+
     bool showFps = false;
 
     void showSettingsMenu(std::function<void(void)> onBackPressed);

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 #include <string>
 #include <vector>
-#include <glm/glm.hpp>
 
 namespace glpp {
     enum class ShaderType {
@@ -24,7 +24,6 @@ namespace glpp {
 
         Shader& operator=(Shader& other) = delete;
         Shader(Shader& other) = delete;
-
 
         void bind();
         void addShader(const std::string& filename, ShaderType type);

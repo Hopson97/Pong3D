@@ -7,6 +7,7 @@ class ScreenMainMenu final : public Screen {
         MainMenu,
         SettingsMenu,
     };
+
   public:
     ScreenMainMenu(ScreenStack* stack);
 
