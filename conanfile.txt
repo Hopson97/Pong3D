@@ -1,0 +1,9 @@
+[requires]
+glm/cci.20220420
+sfml/2.5.1
+imgui/1.89.2
+
+[options]
+
+[generators]
+cmake

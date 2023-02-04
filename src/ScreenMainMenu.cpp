@@ -1,6 +1,6 @@
 #include "ScreenMainMenu.h"
 
-#include <imgui/imgui.h>
+#include <imgui.h>
 
 #include "ScreenInGame.h"
 #include "Settings.h"

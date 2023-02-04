@@ -19,6 +19,11 @@ target_debug() {
     echo "Built target in bin/debug/"
 }
 
+if [ "$1" = "install" ]
+then
+    conan install .. -s compiler.libcxx=libstdc++11 --build=missing
+fi
+
 if [ "$1" = "release" ]
 then
     target_release

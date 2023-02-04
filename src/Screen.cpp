@@ -1,6 +1,6 @@
 #include "Screen.h"
 
-#include <imgui/imgui.h>
+#include <imgui.h>
 
 void ScreenStack::pushScreen(std::unique_ptr<Screen> screen)
 {

@@ -22,27 +22,37 @@ https://github.com/g-truc/glm/tags
 
 ### Linux
 
+Requires conan
+
+```sh
+python3 -m pip install conan
+```
+
 To build, at the root of the project:
 
 ```sh
-sh scripts/build.sh
+./scripts/build.sh install
 ```
+
+If the build fails, try installing:
+
+```
+sudo apt install libx11-dev
+sudo apt install libgl1-mesa-dev
+sudo apt install libegl-dev
+```
+
+The install argument is only needed for the first time compilation as this is what grabs the libraries from Conan
 
 To run, at the root of the project:
 
 ```sh
-sh scripts/run.sh
+./scripts/run.sh
 ```
 
 To build and run in release mode, simply add the `release` suffix:
 
 ```sh
-sh scripts/build.sh release
-sh scripts/run.sh release
-```
-
-You can also create a deployable build (that can be sent) by doing:
-
-```sh
-sh scripts/deploy.sh
+./scripts/build.sh release
+./scripts/run.sh release
 ```

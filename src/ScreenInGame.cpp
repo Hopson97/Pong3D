@@ -4,7 +4,7 @@
 #include "Mesh.h"
 #include "Settings.h"
 #include <SFML/Window/Keyboard.hpp>
-#include <imgui/imgui.h>
+#include <imgui.h>
 #include <iostream>
 
 ScreenInGame::ScreenInGame(ScreenStack* stack)

@@ -5,11 +5,12 @@
 #include "ScreenInGame.h"
 #include "ScreenMainMenu.h"
 #include "Settings.h"
+#include "imgui/imgui_impl_opengl3.h"
+#include "imgui/imgui_wrapper.h"
 #include <SFML/GpuPreference.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Window.hpp>
-#include <imgui/imgui.h>
-#include <imgui_impl/imgui_wrapper.h>
+#include <imgui.h>
 #include <iostream>
 
 SFML_DEFINE_DISCRETE_GPU_PREFERENCE

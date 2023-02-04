@@ -1,7 +1,7 @@
 #include "Settings.h"
 #include "Screen.h"
 #include <fstream>
-#include <imgui/imgui.h>
+#include <imgui.h>
 
 Settings::Settings()
 {
