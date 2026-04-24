@@ -1,204 +1,276 @@
-#include "GL/Framebuffer.h"
-#include "GL/GLDebug.h"
-#include "Mesh.h"
-#include "Screen.h"
-#include "ScreenInGame.h"
-#include "ScreenMainMenu.h"
-#include "Settings.h"
-#include "imgui/imgui_impl_opengl3.h"
-#include "imgui/imgui_wrapper.h"
-#include <SFML/GpuPreference.hpp>
-#include <SFML/Window/Event.hpp>
+#include <print>
+
+#include <SFML/Window/VideoMode.hpp>
 #include <SFML/Window/Window.hpp>
+#include <glad/glad.h>
+
+#include "GUI.h"
+#include "Graphics/Mesh.h"
+#include "Graphics/OpenGL/Framebuffer.h"
+#include "Graphics/OpenGL/GLUtils.h"
+#include "Screen.h"
+#include "ScreenMainMenu.h"
+#include "Util/Keyboard.h"
+#include "Util/Profiler.h"
+#include "Util/TimeStep.h"
 #include <imgui.h>
-#include <iostream>
 
-SFML_DEFINE_DISCRETE_GPU_PREFERENCE
-
-void renderFpsMenu(float windowWidth)
+namespace
 {
-    // Render GUI Stuff
-    auto flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration |
-                 ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-                 ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-    ImGui::SetNextWindowPos(ImVec2(windowWidth - 200, 10));
-    if (ImGui::Begin("FPS", nullptr, flags)) {
-        ImGuiIO& io = ImGui::GetIO();
-        ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-    }
-    ImGui::End();
-}
+    void handle_event(const sf::Event& event, sf::Window& window, bool& show_debug_info,
+                      bool& close_requested);
+} // namespace
 
 int main()
 {
-    // Init Window, OpenGL set up etc
-    sf::ContextSettings contextSettings;
-    contextSettings.depthBits = 24;
-    contextSettings.stencilBits = 8;
-    contextSettings.antialiasingLevel = 4;
-    contextSettings.majorVersion = 3;
-    contextSettings.minorVersion = 3;
-    contextSettings.attributeFlags = sf::ContextSettings::Core;
-    sf::Window window({1280, 720}, "Pong 3D", sf::Style::Close, contextSettings);
-    window.setFramerateLimit(60);
+    sf::ContextSettings context_settings;
+    context_settings.depthBits = 24;
+    context_settings.stencilBits = 8;
+    context_settings.antiAliasingLevel = 4;
+    context_settings.majorVersion = 4;
+    context_settings.minorVersion = 6;
+    context_settings.attributeFlags = sf::ContextSettings::Debug;
 
-    if (!gladLoadGL()) {
-        std::cerr << "Failed to load OpenGL, exiting.\n";
-        return 1;
+    sf::Window window(sf::VideoMode::getDesktopMode(), "Pong 3D", sf::Style::None,
+                      sf::State::Fullscreen, context_settings);
+
+    window.setVerticalSyncEnabled(true);
+    if (!window.setActive(true))
+    {
+        std::println(std::cerr, "Failed to activate the window.");
+        return EXIT_FAILURE;
     }
-    initGLDebug();
-    glCheck(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
-    glCheck(glViewport(0, 0, window.getSize().x, window.getSize().y));
-    glCheck(glEnable(GL_DEPTH_TEST));
-    glCheck(glCullFace(GL_BACK));
-    glCheck(glEnable(GL_CULL_FACE));
-    glCheck(glLineWidth(2.0f));
 
-    // ImGUI
-    ImGui_SFML_OpenGL3::init(window);
-    ImGuiStyle& style = ImGui::GetStyle();
+    if (!gladLoadGL())
+    {
+        std::println(std::cerr, "Failed to initialise OpenGL - Is OpenGL linked correctly?");
+        return EXIT_FAILURE;
+    }
+    gl::enable_debugging();
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glViewport(0, 0, window.getSize().x, window.getSize().y);
+    gl::enable(gl::Capability::DepthTest);
+    gl::enable(gl::Capability::CullFace);
+    gl::cull_face(gl::Face::Back);
+    glLineWidth(2.0f);
+
+    TimeStep updater{50};
+    Profiler profiler;
+    bool show_debug_info = false;
+
+    ScreenStack screens;
+    screens.pushScreen(std::make_unique<ScreenMainMenu>(&screens));
+    screens.update();
+
+    if (!GUI::init(&window))
+    {
+        std::println(std::cerr, "Failed to initialise Imgui.");
+        return EXIT_FAILURE;
+    }
+    auto& style = ImGui::GetStyle();
     style.WindowRounding = 2;
     style.FrameRounding = 0;
     style.PopupRounding = 0;
     style.ScrollbarRounding = 0;
     style.TabRounding = 6;
 
-    ScreenStack screens;
-    screens.pushScreen(std::make_unique<ScreenMainMenu>(&screens));
-    screens.update();
+    //// Frame buffers
+    // gl::Framebuffer framebuffer(window.getSize().x, window.getSize().y);
+    // framebuffer.attach_colour(gl::TextureFormat::RGBA8)
+    //     .attach_colour(gl::TextureFormat::RGBA8)
+    //     .attach_renderbuffer();
+    // if (!framebuffer.is_complete())
+    //{
+    //     std::println(std::cerr, "Failed to initialise framebuffer.");
+    //     return EXIT_FAILURE;
+    // }
 
-    // Framebuffer stuff
-    glpp::Framebuffer framebuffer(window.getSize().x, window.getSize().y);
-    framebuffer.bind();
-    framebuffer.attachTexture();
-    framebuffer.attachTexture();
-    framebuffer.finalise();
-
-    // Blur render pass stuff
+    // Setup blurs
     int blurRes = 4;
-    GLuint width = window.getSize().x / blurRes;
-    GLuint height = window.getSize().y / blurRes;
+    auto width = window.getSize().x / blurRes;
+    auto height = window.getSize().y / blurRes;
 
-    glpp::Framebuffer blurHorizontalFbo(width, height);
-    blurHorizontalFbo.bind();
-    blurHorizontalFbo.attachTexture();
-    blurHorizontalFbo.finalise();
+    gl::Framebuffer blurHorizontalFbo(width, height);
+    blurHorizontalFbo.attach_colour(gl::TextureFormat::RGBA8).attach_renderbuffer();
+    if (!blurHorizontalFbo.is_complete())
+    {
+        std::println(std::cerr, "Failed to initialise blurHorizontalFbo.");
+        return EXIT_FAILURE;
+    }
 
-    glpp::Framebuffer blurVerticalFbo(width, height);
-    blurVerticalFbo.bind();
-    blurVerticalFbo.attachTexture();
-    blurVerticalFbo.finalise();
+    gl::Framebuffer blurVerticalFbo(width, height);
+    blurVerticalFbo.attach_colour(gl::TextureFormat::RGBA8).attach_renderbuffer();
+    if (!blurVerticalFbo.is_complete())
+    {
+        std::println(std::cerr, "Failed to initialise blurVerticalFbo.");
+        return EXIT_FAILURE;
+    }
 
-    glpp::Shader blurShader;
-    blurShader.addShader("screen_vertex", glpp::ShaderType::Vertex);
-    blurShader.addShader("blur_fragment", glpp::ShaderType::Fragment);
-    blurShader.linkShaders();
-    blurShader.bind();
-    glpp::UniformLocation blurLocation = blurShader.getUniformLocation("horizontalBlur");
+    gl::Shader blurShader;
+    if (!blurShader.load_stage("assets/shaders/screen_vertex.glsl", gl::ShaderType::Vertex) ||
+        !blurShader.load_stage("assets/shaders/blur_fragment.glsl", gl::ShaderType::Fragment) ||
+        !blurShader.link_shaders())
+    {
+        std::println(std::cerr, "Failed to initialise blurShader.");
+        return EXIT_FAILURE;
+    }
 
-    // Final pass
-    glpp::Shader finalPassShader;
-    finalPassShader.addShader("screen_vertex", glpp::ShaderType::Vertex);
-    finalPassShader.addShader("screen_fragment", glpp::ShaderType::Fragment);
-    finalPassShader.linkShaders();
+    gl::Shader finalPassShader;
+    if (!finalPassShader.load_stage("assets/shaders/screen_vertex.glsl", gl::ShaderType::Vertex) ||
+        !finalPassShader.load_stage("assets/shaders/screen_fragment.glsl",
+                                    gl::ShaderType::Fragment) ||
+        !finalPassShader.link_shaders())
+    {
+        std::println(std::cerr, "Failed to initialise blurShader.");
+        return EXIT_FAILURE;
+    }
+
     finalPassShader.bind();
-    glpp::loadUniform(finalPassShader.getUniformLocation("bloomTexture"), 0);
-    glpp::loadUniform(finalPassShader.getUniformLocation("colourTexture"), 1);
-    glpp::UniformLocation bloomToggle = finalPassShader.getUniformLocation("bloomToggle");
+    finalPassShader.set_uniform("bloomTexture", 0);
+    finalPassShader.set_uniform("colourTexture", 1);
+    finalPassShader.set_uniform("bloomToggle", true);
 
-    // Final pass render target
-    auto screenMesh = createScreenMesh();
-    glpp::VertexArray screenVertexArray;
-    screenVertexArray.bind();
-    screenVertexArray.addAttribute(screenMesh.positions, 2);
-    screenVertexArray.addAttribute(screenMesh.textureCoords, 2);
-    screenVertexArray.addElements(screenMesh.indices);
-    glpp::Drawable screenDrawable = screenVertexArray.getDrawable();
+    // Mesh
+    gl::VertexArrayObject fboVAO;
 
-    // Main loop
-    sf::Clock deltaTimer;
-    while (window.isOpen() && screens.hasScreen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            ImGui_ImplSfml_ProcessEvent(event);
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
-        ImGui_SFML_OpenGL3::startFrame();
+    Keyboard keyboard;
 
-        if (Settings::get().showFps) {
-            renderFpsMenu((float)window.getSize().x);
+    // -------------------
+    // ==== Main Loop ====
+    // -------------------
+
+    while (window.isOpen() && screens.hasScreen())
+    {
+        GUI::begin_frame();
+        bool close_requested = false;
+        while (auto event = window.pollEvent())
+        {
+            GUI::event(window, *event);
+            keyboard.update(*event);
+            handle_event(*event, window, show_debug_info, close_requested);
         }
 
-        Screen& screen = screens.peekScreen();
-        screen.onInput();
-        screen.onUpdate(deltaTimer.restart().asSeconds());
+        auto& screen = screens.peekScreen();
 
-        // Render the scene to a framebuffer
-        glCheck(glEnable(GL_DEPTH_TEST));
-        framebuffer.bind();
-        glCheck(glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT));
-        screen.onRender();
+        // Update
+        {
+            auto& update_profiler = profiler.begin_section("Update");
+            screen.onInput();
+            update_profiler.end_section();
+        }
+
+        // Fixed-rate update
+        {
+            auto& fixed_update_profiler = profiler.begin_section("Fixed Update");
+            updater.update([&](sf::Time dt) { screen.onUpdate(dt.asSeconds()); });
+            fixed_update_profiler.end_section();
+        }
+
+        // Render
+        {
+            gl::enable(gl::Capability::DepthTest);
+            gl::enable(gl::Capability::CullFace);
+            auto& render_profiler = profiler.begin_section("Render");
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            // framebuffer.bind(gl::FramebufferTarget::Framebuffer, true);
+            screen.onRender();
+
+            render_profiler.end_section();
+        }
 
         // Begin Post Processing
-        screenDrawable.bind();
-        glCheck(glDisable(GL_DEPTH_TEST));
-        glCheck(glActiveTexture(GL_TEXTURE0));
+        fboVAO.bind();
+        gl::disable(gl::Capability::DepthTest);
 
-        if (Settings::get().useBloomShaders) {
-            blurShader.bind();
-            // Blur the image horizontal
-            blurHorizontalFbo.bind();
-            glCheck(glClear(GL_COLOR_BUFFER_BIT));
-            framebuffer.bindTexture(1);
-            loadUniform(blurLocation, 1);
-            screenDrawable.draw();
+        // if (Settings::get().useBloomShaders)
+        //{
+        //     blurShader.bind();
+        //     // Blur the image horizontal
+        //     blurHorizontalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
+        //     blurShader.set_uniform("horizontalBlur", 1);
+        //     framebuffer.bind_texture(0, 1);
+        //     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-            // Blur the image vertical
-            blurVerticalFbo.bind();
-            glCheck(glClear(GL_COLOR_BUFFER_BIT));
-            blurHorizontalFbo.bindTexture(0);
-            loadUniform(blurLocation, 0);
-            screenDrawable.draw();
+        //    // Blur the image vertical
+        //    blurVerticalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
+        //    blurHorizontalFbo.bind_texture(0, 0);
+        //    blurShader.set_uniform("horizontalBlur", 0);
+        //    glDrawArrays(GL_TRIANGLES, 0, 6);
 
-            // Keep on blurring
-            for (int i = 0; i < 10; i++) {
-                blurHorizontalFbo.bind();
-                glCheck(glClear(GL_COLOR_BUFFER_BIT));
-                blurVerticalFbo.bindTexture(0);
+        //    // Keep on blurring
+        //    for (int i = 0; i < 10; i++)
+        //    {
+        //        blurVerticalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
+        //        blurHorizontalFbo.bind_texture(0, 0);
+        //        blurShader.set_uniform("horizontalBlur", 0);
+        //        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-                loadUniform(blurLocation, 1);
-                screenDrawable.draw();
-
-                blurVerticalFbo.bind();
-                glCheck(glClear(GL_COLOR_BUFFER_BIT));
-                blurHorizontalFbo.bindTexture(0);
-                loadUniform(blurLocation, 0);
-                screenDrawable.draw();
-            }
-        }
+        //        blurHorizontalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
+        //        blurShader.set_uniform("horizontalBlur", 1);
+        //        framebuffer.bind_texture(0, 1);
+        //        glDrawArrays(GL_TRIANGLES, 0, 6);
+        //    }
+        //}
 
         // Render to the window
-        finalPassShader.bind();
-        glpp::Framebuffer::unbind(window.getSize().x, window.getSize().y);
-        glCheck(glClear(GL_COLOR_BUFFER_BIT));
+        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glCheck(glActiveTexture(GL_TEXTURE0));
-        blurVerticalFbo.bindTexture(0);
+        // glClear(GL_COLOR_BUFFER_BIT);
 
-        glCheck(glActiveTexture(GL_TEXTURE1));
-        framebuffer.bindTexture(0);
+        // blurVerticalFbo.bind_texture(0, 0);
+        // framebuffer.bind_texture(0, 1);
 
-        loadUniform(bloomToggle, Settings::get().useBloomShaders);
+        // finalPassShader.bind();
+        // finalPassShader.set_uniform("bloomToggle", Settings::get().useBloomShaders);
 
-        screenDrawable.draw();
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        // Display
-        ImGui_SFML_OpenGL3::endFrame();
+        // Show profiler
+        profiler.end_frame();
+        if (show_debug_info)
+        {
+            profiler.gui();
+        }
+
+        // --------------------------
+        // ==== End Frame ====
+        // --------------------------
+        GUI::render();
         window.display();
+        if (close_requested)
+        {
+            window.close();
+        }
         screens.update();
     }
-    ImGui_SFML_OpenGL3::shutdown();
 
-    return 0;
+    // --------------------------
+    // ==== Graceful Cleanup ====
+    // --------------------------
+    GUI::shutdown();
 }
+
+namespace
+{
+    void handle_event(const sf::Event& event, sf::Window& window, bool& show_debug_info,
+                      bool& close_requested)
+    {
+        if (event.is<sf::Event::Closed>())
+        {
+            close_requested = true;
+        }
+        else if (auto* key = event.getIf<sf::Event::KeyPressed>())
+        {
+
+            switch (key->code)
+            {
+                case sf::Keyboard::Key::F1:
+                    show_debug_info = !show_debug_info;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+} // namespace

@@ -2,7 +2,8 @@
 
 #include <functional>
 
-struct Settings {
+struct Settings
+{
   private:
     Settings();
     ~Settings();
@@ -15,7 +16,7 @@ struct Settings {
     }
 
     // Video Settings
-    bool useBloomShaders = true;
+    bool useBloomShaders = false;
 
     bool renderTerrain = true;
 

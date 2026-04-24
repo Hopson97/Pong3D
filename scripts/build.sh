@@ -1,36 +1,47 @@
 #!/bin/bash
 
-mkdir -p bin
-cd bin 
-mkdir -p release
-mkdir -p debug
-
 target_release() {
     cd release
     cmake -DCMAKE_BUILD_TYPE=Release ../..
     make
-    echo "Built target in bin/release/"
+    echo "Built target in build/release/"
+    cd ../..
 }
 
 target_debug() {
     cd debug 
     cmake -DCMAKE_BUILD_TYPE=Debug ../..
     make
-    echo "Built target in bin/debug/"
+    echo "Built target in build/debug/"
+    cd ../..
 }
 
-if [ "$1" = "install" ]
+# Create folder for distribution
+if [ "$1" = "release" ]
 then
-    conan install .. -s compiler.libcxx=libstdc++11 --build=missing
+    if [ -d "$pong-3d" ]
+    then
+        rm -rf -d pong-3d
+    fi
+
+    mkdir -p pong-3d
 fi
 
+# Creates the folder for the buildaries
+mkdir -p pong-3d 
+mkdir -p pong-3d/assets
+mkdir -p build
+mkdir -p build/release
+mkdir -p build/debug
+cd build
+
+# Builds target
 if [ "$1" = "release" ]
 then
     target_release
-elif [ "$1" = "both" ]
-then
-    target_release
-    target_debug
+    cp build/release/pong-3d pong-3d/pong-3d
 else
     target_debug
 fi
+
+cp -R assets pong-3d/

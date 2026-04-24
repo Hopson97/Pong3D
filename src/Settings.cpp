@@ -5,22 +5,28 @@
 
 Settings::Settings()
 {
-    std::ifstream inFile("data/settings.txt");
+    std::ifstream inFile("settings.txt");
     std::string val;
-    while (inFile >> val) {
-        if (val == "show_fps") {
+    while (inFile >> val)
+    {
+        if (val == "show_fps")
+        {
             inFile >> showFps;
         }
-        else if (val == "show_bloom") {
+        else if (val == "show_bloom")
+        {
             inFile >> useBloomShaders;
         }
-        else if (val == "render_terrain") {
+        else if (val == "render_terrain")
+        {
             inFile >> renderTerrain;
         }
-        else if (val == "sway_terrain") {
+        else if (val == "sway_terrain")
+        {
             inFile >> swayTerrain;
         }
-        else if (val == "move_terrain") {
+        else if (val == "move_terrain")
+        {
             inFile >> moveTerrain;
         }
     }
@@ -28,7 +34,7 @@ Settings::Settings()
 
 Settings::~Settings()
 {
-    std::ofstream outFile("data/settings.txt");
+    std::ofstream outFile("settings.txt");
     outFile << "show_fps" << ' ' << showFps << '\n';
     outFile << "show_bloom" << ' ' << useBloomShaders << '\n';
     outFile << "render_terrain" << ' ' << renderTerrain << '\n';
@@ -38,7 +44,8 @@ Settings::~Settings()
 
 void Settings::showSettingsMenu(std::function<void(void)> onBackPressed)
 {
-    if (imguiBeginCustom("S E T T I N G S")) {
+    if (imguiBeginCustom("S E T T I N G S"))
+    {
         ImGui::Separator();
         ImGui::Text("Basic Settings");
         ImGui::Checkbox("Show FPS Counter", &showFps);
@@ -54,7 +61,8 @@ void Settings::showSettingsMenu(std::function<void(void)> onBackPressed)
         ImGui::Checkbox("Move Terrain", &moveTerrain);
 
         ImGui::Separator();
-        if (imguiButtonCustom("Back")) {
+        if (imguiButtonCustom("Back"))
+        {
             onBackPressed();
         }
     }
