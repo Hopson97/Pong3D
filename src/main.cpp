@@ -54,7 +54,7 @@ int main()
     gl::cull_face(gl::Face::Back);
     glLineWidth(2.0f);
 
-    TimeStep updater{50};
+    TimeStep updater{120};
     Profiler profiler;
     bool show_debug_info = false;
 
@@ -74,16 +74,16 @@ int main()
     style.ScrollbarRounding = 0;
     style.TabRounding = 6;
 
-    //// Frame buffers
-    // gl::Framebuffer framebuffer(window.getSize().x, window.getSize().y);
-    // framebuffer.attach_colour(gl::TextureFormat::RGBA8)
-    //     .attach_colour(gl::TextureFormat::RGBA8)
-    //     .attach_renderbuffer();
-    // if (!framebuffer.is_complete())
-    //{
-    //     std::println(std::cerr, "Failed to initialise framebuffer.");
-    //     return EXIT_FAILURE;
-    // }
+    // Frame buffers
+    gl::Framebuffer framebuffer(window.getSize().x, window.getSize().y);
+    framebuffer.attach_colour(gl::TextureFormat::RGBA8)
+        .attach_colour(gl::TextureFormat::RGBA8)
+        .attach_renderbuffer();
+    if (!framebuffer.is_complete())
+    {
+        std::println(std::cerr, "Failed to initialise framebuffer.");
+        return EXIT_FAILURE;
+    }
 
     // Setup blurs
     int blurRes = 4;
@@ -168,11 +168,10 @@ int main()
 
         // Render
         {
+            auto& render_profiler = profiler.begin_section("Render");
             gl::enable(gl::Capability::DepthTest);
             gl::enable(gl::Capability::CullFace);
-            auto& render_profiler = profiler.begin_section("Render");
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            // framebuffer.bind(gl::FramebufferTarget::Framebuffer, true);
+            framebuffer.bind(gl::FramebufferTarget::Framebuffer, true);
             screen.onRender();
 
             render_profiler.end_section();
@@ -182,48 +181,48 @@ int main()
         fboVAO.bind();
         gl::disable(gl::Capability::DepthTest);
 
-        // if (Settings::get().useBloomShaders)
-        //{
-        //     blurShader.bind();
-        //     // Blur the image horizontal
-        //     blurHorizontalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
-        //     blurShader.set_uniform("horizontalBlur", 1);
-        //     framebuffer.bind_texture(0, 1);
-        //     glDrawArrays(GL_TRIANGLES, 0, 6);
+        if (Settings::get().useBloomShaders)
+        {
+            blurShader.bind();
+            // Blur the image horizontal
+            blurHorizontalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
+            framebuffer.bind_texture(0, 0);
+            blurShader.set_uniform("horizontalBlur", 1);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        //    // Blur the image vertical
-        //    blurVerticalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
-        //    blurHorizontalFbo.bind_texture(0, 0);
-        //    blurShader.set_uniform("horizontalBlur", 0);
-        //    glDrawArrays(GL_TRIANGLES, 0, 6);
+            // Blur the image vertical
+            blurVerticalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
+            blurHorizontalFbo.bind_texture(0, 0);
+            blurShader.set_uniform("horizontalBlur", 0);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        //    // Keep on blurring
-        //    for (int i = 0; i < 10; i++)
-        //    {
-        //        blurVerticalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
-        //        blurHorizontalFbo.bind_texture(0, 0);
-        //        blurShader.set_uniform("horizontalBlur", 0);
-        //        glDrawArrays(GL_TRIANGLES, 0, 6);
+            // Keep on blurring
+            for (int i = 0; i < 10; i++)
+            {
+                blurHorizontalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
+                blurVerticalFbo.bind_texture(0, 0);
+                blurShader.set_uniform("horizontalBlur", 1);
+                glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        //        blurHorizontalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
-        //        blurShader.set_uniform("horizontalBlur", 1);
-        //        framebuffer.bind_texture(0, 1);
-        //        glDrawArrays(GL_TRIANGLES, 0, 6);
-        //    }
-        //}
+                blurVerticalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
+                blurHorizontalFbo.bind_texture(0, 0);
+                blurShader.set_uniform("horizontalBlur", 1);
+                glDrawArrays(GL_TRIANGLES, 0, 6);
+            }
+        }
 
         // Render to the window
-        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, window.getSize().x, window.getSize().y);
 
-        // glClear(GL_COLOR_BUFFER_BIT);
+        blurVerticalFbo.bind_texture(0, 0);
+        framebuffer.bind_texture(0, 1);
 
-        // blurVerticalFbo.bind_texture(0, 0);
-        // framebuffer.bind_texture(0, 1);
+        finalPassShader.bind();
+        finalPassShader.set_uniform("bloomToggle", Settings::get().useBloomShaders);
 
-        // finalPassShader.bind();
-        // finalPassShader.set_uniform("bloomToggle", Settings::get().useBloomShaders);
-
-        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // Show profiler
         profiler.end_frame();

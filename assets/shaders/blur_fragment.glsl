@@ -26,5 +26,5 @@ void main()
         }
     }
 
-    outColour = vec4(result, 1.0);
+outColour = vec4(result * 1.01, 1.0);
 }
