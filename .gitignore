@@ -21,7 +21,9 @@ Release/
 # Vcpkg
 vcpkg_installed/
 
-pong-3d/
+Pong3D/
+Pong3D.zip
+
 
 
 settings.txt
