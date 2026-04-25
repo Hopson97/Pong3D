@@ -68,10 +68,9 @@ Screen::Screen(ScreenStack* screens)
 
 bool imguiBeginCustom(const char* name)
 {
-    ImVec2 windowSize(1280.0f / 4.0f, 720.0f / 2.0f);
-    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 
     ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+    ImVec2 windowSize(displaySize.x / 4.0f, displaySize.y / 1.5f);
 
     ImVec2 windowPos =
         ImVec2((displaySize.x - windowSize.x) * 0.5f, (displaySize.y - windowSize.y) * 0.5f);
@@ -86,5 +85,5 @@ bool imguiBeginCustom(const char* name)
 bool imguiButtonCustom(const char* text)
 {
     ImGui::SetCursorPos({ImGui::GetCursorPosX() + 100, ImGui::GetCursorPosY() + 20});
-    return ImGui::Button(text, {100, 50});
+    return ImGui::Button(text, {100, 35});
 }

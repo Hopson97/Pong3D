@@ -8,9 +8,10 @@
 
 #include "Settings.h"
 
-ScreenInGame::ScreenInGame(ScreenStack* stack)
+ScreenInGame::ScreenInGame(ScreenStack* stack, float enemySpeed)
     : Screen(stack)
-    , m_camera(1280.0f / 720.0f, 80)
+    , m_camera(ImGui::GetIO().DisplaySize.x / ImGui::GetIO().DisplaySize.y, 80)
+    , m_enemySpeed(enemySpeed)
 {
 
     roomMesh.buffer();
@@ -49,22 +50,21 @@ void ScreenInGame::onInput()
     {
         return;
     }
-    float SPEED = 0.8f;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
     {
-        m_player.velocity.y += SPEED;
+        m_player.velocity.y += PADDLE_SPEED;
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
     {
-        m_player.velocity.y -= SPEED;
+        m_player.velocity.y -= PADDLE_SPEED;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
     {
-        m_player.velocity.x += SPEED;
+        m_player.velocity.x += PADDLE_SPEED;
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
     {
-        m_player.velocity.x -= SPEED;
+        m_player.velocity.x -= PADDLE_SPEED;
     }
 
     // "AI" Input
@@ -72,19 +72,19 @@ void ScreenInGame::onInput()
     {
         if (m_ball.position.x + Ball::WIDTH / 2 > m_enemy.position.x + Paddle::WIDTH / 2)
         {
-            m_enemy.velocity.x += SPEED;
+            m_enemy.velocity.x += m_enemySpeed;
         }
         else if (m_ball.position.x + Ball::WIDTH / 2 < m_enemy.position.x + Paddle::WIDTH / 2)
         {
-            m_enemy.velocity.x += -SPEED;
+            m_enemy.velocity.x += -m_enemySpeed;
         }
         if (m_ball.position.y - Ball::HEIGHT / 2 > m_enemy.position.y + Paddle::HEIGHT / 2)
         {
-            m_enemy.velocity.y += SPEED;
+            m_enemy.velocity.y += m_enemySpeed;
         }
         else if (m_ball.position.y + Ball::HEIGHT / 2 < m_enemy.position.y + Paddle::HEIGHT / 2)
         {
-            m_enemy.velocity.y += -SPEED;
+            m_enemy.velocity.y += -m_enemySpeed;
         }
     }
 }
@@ -118,11 +118,14 @@ void ScreenInGame::onUpdate(float dt)
     {
         m_playerScore++;
         m_ball.velocity.z = -BALL_SPEED;
+        m_ball.position.z = ROOM_DEPTH - Ball::WIDTH + Ball::HEIGHT;
     }
     else if (m_ball.position.z + Ball::DEPTH < 0)
     {
         m_enemyScore++;
         m_ball.velocity.z = BALL_SPEED;
+        m_ball.position.z = Ball::WIDTH + Ball::HEIGHT;
+
     }
     // Update camera
     m_camera.position.x = m_player.position.x + Paddle::WIDTH / 2;
@@ -144,7 +147,7 @@ void ScreenInGame::onUpdate(float dt)
             }
             if (Settings::get().moveTerrain)
             {
-                loc.z -= 45.0f * dt;
+                loc.z -= 100.0f * dt;
             }
             if (loc.z < -TERRAIN_LENGTH - 10.0f)
             {

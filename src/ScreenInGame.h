@@ -20,7 +20,7 @@ class ScreenInGame final : public Screen
     };
 
   public:
-    ScreenInGame(ScreenStack* stack);
+    ScreenInGame(ScreenStack* stack, float enemySpeed);
 
     void onInput() override;
     void onUpdate(float dt) override;
@@ -51,4 +51,5 @@ class ScreenInGame final : public Screen
 
     int m_playerScore = 0;
     int m_enemyScore = 0;
+    float m_enemySpeed = 0;
 };

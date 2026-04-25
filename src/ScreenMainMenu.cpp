@@ -23,8 +23,7 @@ void ScreenMainMenu::onRender()
 
                 if (imguiButtonCustom("Start Game"))
                 {
-
-                    m_pScreens->pushScreen(std::make_unique<ScreenInGame>(m_pScreens));
+                    m_activeMenu = Menu::StartMenu;
                 }
                 if (imguiButtonCustom("Settings"))
                 {
@@ -40,6 +39,43 @@ void ScreenMainMenu::onRender()
 
         case ScreenMainMenu::Menu::SettingsMenu:
             Settings::get().showSettingsMenu([&] { m_activeMenu = Menu::MainMenu; });
+            break;
+
+        case ScreenMainMenu::Menu::StartMenu:
+            if (imguiBeginCustom("Start Game"))
+            {
+                ImGui::Text("Select Difficulty");
+                ImGui::Separator();
+
+                if (imguiButtonCustom("Easy"))
+                {
+                    m_pScreens->pushScreen(
+                        std::make_unique<ScreenInGame>(m_pScreens, PADDLE_SPEED / 5.0f));
+                }
+                if (imguiButtonCustom("Medium"))
+                {
+                    m_pScreens->pushScreen(
+                        std::make_unique<ScreenInGame>(m_pScreens, PADDLE_SPEED / 3.0f));
+                }
+                if (imguiButtonCustom("Hard"))
+                {
+                    m_pScreens->pushScreen(
+                        std::make_unique<ScreenInGame>(m_pScreens, PADDLE_SPEED));
+                }
+
+                if (imguiButtonCustom("Impossible"))
+                {
+                    m_pScreens->pushScreen(
+                        std::make_unique<ScreenInGame>(m_pScreens, PADDLE_SPEED * 1.5f));
+                }
+
+                ImGui::Separator();
+                if (imguiButtonCustom("Back"))
+                {
+                    m_activeMenu = Menu::MainMenu;
+                }
+            }
+            ImGui::End();
             break;
     }
 }

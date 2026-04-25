@@ -7,6 +7,7 @@ class ScreenMainMenu final : public Screen
     enum class Menu
     {
         MainMenu,
+        StartMenu,
         SettingsMenu,
     };
 

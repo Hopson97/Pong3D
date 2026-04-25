@@ -68,7 +68,7 @@ void Settings::showSettingsMenu(std::function<void(void)> onBackPressed)
         {
             ImGui::BeginDisabled();
         }
-        ImGui::SliderFloat("Bloom Intenstity", &bloom_intensity, 1.0000f, 1.225f);
+        ImGui::SliderFloat("Bloom Intenstity", &bloom_intensity, 1.0000f, 1.125f);
         if (!useBloomShaders)
         {
             ImGui::EndDisabled();
