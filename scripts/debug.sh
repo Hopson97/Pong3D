@@ -1,4 +1,4 @@
 #!/bin/bash
 
-sh scripts/build.sh
-gdb ./bin/debug/bin/Pong3D 
+./scripts/build.sh
+gdb ./build/debug/pong-3d  

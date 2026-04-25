@@ -27,8 +27,10 @@ void ScreenStack::changeScreen(std::unique_ptr<Screen> screen)
 
 void ScreenStack::update()
 {
-    for (Action& action : m_actions) {
-        switch (action.kind) {
+    for (Action& action : m_actions)
+    {
+        switch (action.kind)
+        {
             case Action::Kind::Push:
                 m_screens.push(std::move(action.screen));
                 break;
@@ -38,7 +40,8 @@ void ScreenStack::update()
                 break;
 
             case Action::Kind::Change:
-                while (!m_screens.empty()) {
+                while (!m_screens.empty())
+                {
                     m_screens.pop();
                 }
                 m_screens.push(std::move(action.screen));
@@ -65,18 +68,22 @@ Screen::Screen(ScreenStack* screens)
 
 bool imguiBeginCustom(const char* name)
 {
-    ImVec2 windowSize(1280 / 4, 720 / 2);
-    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-    ImGui::SetNextWindowPos({windowSize.x + windowSize.x * 4 / 8.0f, windowSize.y / 2},
-                            ImGuiCond_Always);
+
+    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+    ImVec2 windowSize(displaySize.x / 4.0f, displaySize.y / 1.5f);
+
+    ImVec2 windowPos =
+        ImVec2((displaySize.x - windowSize.x) * 0.5f, (displaySize.y - windowSize.y) * 0.5f);
+
+    ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
     return ImGui::Begin(name, nullptr,
                         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-                            ImGuiWindowFlags_NoCollapse |
-                            ImGuiWindowFlags_AlwaysAutoResize);
+                            ImGuiWindowFlags_NoCollapse);
 }
 
 bool imguiButtonCustom(const char* text)
 {
     ImGui::SetCursorPos({ImGui::GetCursorPosX() + 100, ImGui::GetCursorPosY() + 20});
-    return ImGui::Button(text, {100, 50});
+    return ImGui::Button(text, {100, 35});
 }

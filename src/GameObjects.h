@@ -5,6 +5,7 @@
 constexpr float ROOM_SIZE = 30.0f;
 constexpr float ROOM_DEPTH = 50.0f;
 constexpr float BALL_SPEED = 15.0f;
+constexpr float PADDLE_SPEED = 0.8f;
 
 constexpr float TERRAIN_HEIGHT = 35.0f;
 constexpr float TERRAIN_WIDTH = 75.0f;
@@ -14,25 +15,30 @@ constexpr float TERRAIN_LENGTH = TERRAIN_HEIGHT * TILE_SIZE;
 template <typename T, typename F>
 void roomCollide(T& object, F onCollide)
 {
-    if (object.position.x + T::WIDTH > ROOM_SIZE) {
+    if (object.position.x + T::WIDTH > ROOM_SIZE)
+    {
         object.position.x = ROOM_SIZE - T::WIDTH;
         onCollide(object.velocity.x);
     }
-    else if (object.position.x < 0) {
+    else if (object.position.x < 0)
+    {
         object.position.x = 0;
         onCollide(object.velocity.x);
     }
-    if (object.position.y + T::HEIGHT > ROOM_SIZE) {
+    if (object.position.y + T::HEIGHT > ROOM_SIZE)
+    {
         object.position.y = ROOM_SIZE - T::HEIGHT;
         onCollide(object.velocity.y);
     }
-    else if (object.position.y < 0) {
+    else if (object.position.y < 0)
+    {
         object.position.y = 0;
         onCollide(object.velocity.y);
     }
 }
 
-struct Camera {
+struct Camera
+{
     glm::vec3 position{0.0f};
     glm::vec3 rotation{0, 180, 0};
     glm::mat4 projectionMatrix{1.0f};
@@ -41,7 +47,8 @@ struct Camera {
     glm::mat4 getProjectionView() const;
 };
 
-struct AABB {
+struct AABB
+{
     glm::vec3 min{0.0f};
     glm::vec3 max{0.0f};
 
@@ -60,7 +67,8 @@ struct AABB {
     }
 };
 
-struct Paddle {
+struct Paddle
+{
     constexpr static float WIDTH = 5.0f;
     constexpr static float HEIGHT = 3.0f;
     constexpr static float DEPTH = 0.5f;
@@ -71,7 +79,8 @@ struct Paddle {
     void update(float dt);
 };
 
-struct Ball {
+struct Ball
+{
     constexpr static float WIDTH = 0.5f;
     constexpr static float DEPTH = 0.5f;
     constexpr static float HEIGHT = 0.5f;

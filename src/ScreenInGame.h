@@ -1,24 +1,26 @@
 #pragma once
 
-#include "GL/Shader.h"
-#include "GL/VertexArray.h"
 #include "GameObjects.h"
+#include "Graphics/OpenGL/Shader.h"
+#include "Graphics/OpenGL/VertexArrayObject.h"
+#include "Graphics/Mesh.h"
 #include "Maths.h"
 #include "Screen.h"
 #include <SFML/System/Clock.hpp>
 
 #include <list>
 
-class ScreenInGame final : public Screen {
-    struct Terrain {
+class ScreenInGame final : public Screen
+{
+    struct Terrain
+    {
         int index = 0;
         glm::vec3 location{0.0f};
-        glpp::VertexArray vertexArray;
+        Mesh3D mesh;
     };
 
   public:
-    ScreenInGame(ScreenStack* stack);
-    ~ScreenInGame();
+    ScreenInGame(ScreenStack* stack, float enemySpeed);
 
     void onInput() override;
     void onUpdate(float dt) override;
@@ -41,16 +43,13 @@ class ScreenInGame final : public Screen {
     Paddle m_enemy;
     Ball m_ball;
 
-    glpp::VertexArray m_paddleVao;
-    glpp::VertexArray m_ballVao;
-    glpp::VertexArray m_roomVao;
+    Mesh3D roomMesh = createWireCubeMesh({ROOM_SIZE, ROOM_SIZE, ROOM_DEPTH}, 0.3f);
+    Mesh3D ballMesh = createWireCubeMesh({Ball::WIDTH, Ball::HEIGHT, Ball::WIDTH});
+    Mesh3D paddleMesh = createWireCubeMesh({Paddle::WIDTH, Paddle::HEIGHT, 0.25f});
 
-    glpp::Shader m_shader;
-    glpp::UniformLocation m_locModelMat;
-    glpp::UniformLocation m_locPvMat;
-    glpp::UniformLocation m_locLightPos;
-    glpp::UniformLocation m_locColour;
+    gl::Shader m_shader;
 
     int m_playerScore = 0;
     int m_enemyScore = 0;
+    float m_enemySpeed = 0;
 };

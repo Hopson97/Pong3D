@@ -2,7 +2,7 @@
 
 if [ "$1" = "release" ]
 then
-    ./bin/release/bin/Pong3D 
+    ./build/release/pong-3d
 else
-    ./bin/debug/bin/Pong3D 
+    ./build/debug/pong-3d
 fi

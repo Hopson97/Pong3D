@@ -2,9 +2,12 @@
 
 #include "Screen.h"
 
-class ScreenMainMenu final : public Screen {
-    enum class Menu {
+class ScreenMainMenu final : public Screen
+{
+    enum class Menu
+    {
         MainMenu,
+        StartMenu,
         SettingsMenu,
     };
 
