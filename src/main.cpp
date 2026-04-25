@@ -85,6 +85,15 @@ int main()
         return EXIT_FAILURE;
     }
 
+    // MSAA
+    gl::Framebuffer msaa_framebuffer(window.getSize().x, window.getSize().y);
+    msaa_framebuffer.create_as_multisample_aa();
+    if (!msaa_framebuffer.is_complete())
+    {
+        std::println(std::cerr, "Failed to initialise MSAA.");
+        return EXIT_FAILURE;
+    }
+
     // Setup blurs
     int blurRes = 4;
     auto width = window.getSize().x / blurRes;
@@ -171,7 +180,15 @@ int main()
             auto& render_profiler = profiler.begin_section("Render");
             gl::enable(gl::Capability::DepthTest);
             gl::enable(gl::Capability::CullFace);
-            framebuffer.bind(gl::FramebufferTarget::Framebuffer, true);
+
+            if (Settings::get().enable_msaa)
+            {
+                msaa_framebuffer.bind(gl::FramebufferTarget::Framebuffer, true);
+            }
+            else
+            {
+                framebuffer.bind(gl::FramebufferTarget::Framebuffer, true);
+            }
             screen.onRender();
 
             render_profiler.end_section();
@@ -184,6 +201,8 @@ int main()
         if (Settings::get().useBloomShaders)
         {
             blurShader.bind();
+            blurShader.set_uniform("bloomIntenstity", Settings::get().bloom_intensity);
+
             // Blur the image horizontal
             blurHorizontalFbo.bind(gl::FramebufferTarget::Framebuffer, true);
             framebuffer.bind_texture(0, 0);
@@ -212,6 +231,15 @@ int main()
         }
 
         // Render to the window
+        if (Settings::get().enable_msaa)
+        {
+            msaa_framebuffer.bind(gl::FramebufferTarget::ReadFramebuffer, false);
+            framebuffer.bind(gl::FramebufferTarget::DrawFramebuffer, false);
+            glBlitFramebuffer(0, 0, msaa_framebuffer.width, msaa_framebuffer.height, 0, 0,
+                              framebuffer.width, framebuffer.height, GL_COLOR_BUFFER_BIT,
+                              GL_NEAREST);
+        }
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, window.getSize().x, window.getSize().y);

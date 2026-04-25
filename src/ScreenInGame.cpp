@@ -184,7 +184,6 @@ void ScreenInGame::onRender()
     m_shader.set_uniform("colour", {0.0, 0.65, 0.7});
 
     roomMesh.bind();
-    roomMesh.draw_elements();
 
     m_shader.set_uniform("modelMatrix", createModelMatrix({0, 0, 0}, {0, 0, 0}));
     roomMesh.draw_elements();
