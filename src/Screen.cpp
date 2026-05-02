@@ -70,7 +70,7 @@ bool imguiBeginCustom(const char* name)
 {
 
     ImVec2 displaySize = ImGui::GetIO().DisplaySize;
-    ImVec2 windowSize(displaySize.x / 4.0f, displaySize.y / 1.5f);
+    ImVec2 windowSize(1280 / 4.0f, 720 / 1.5f);
 
     ImVec2 windowPos =
         ImVec2((displaySize.x - windowSize.x) * 0.5f, (displaySize.y - windowSize.y) * 0.5f);
